@@ -1,0 +1,18 @@
+'A1':
+    VALUE: [-4,-2,0,2,4,6,8,10]
+    FLAG: '-'
+'B1':
+    VALUE: [-10,-5,0,5,10]
+    FLAG: '-'
+'C1':
+    VALUE: Upright, no gear
+    FLAG: '-'
+'C2':
+    VALUE: Upright, gear
+    FLAG: '-'
+'C3':
+    VALUE: Inverted, no gear
+    FLAG: '-'
+'TBD':
+    VALUE: 5
+    FLAG: 'R'

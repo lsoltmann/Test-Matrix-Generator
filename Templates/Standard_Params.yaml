@@ -1,0 +1,33 @@
+'Run':
+    VALUE: '#TESTPOINT'
+    FLAG: '-'
+'Group':
+    VALUE: '&GROUP'
+    FLAG: '-'
+'Priority':
+    VALUE: '1'
+    FLAG: '-'
+'Configuration':
+    VALUE: 'C1'
+    FLAG: '-'
+'Q':
+    VALUE: '60'
+    FLAG: '-'
+'Alpha':
+    VALUE: 'A1'
+    FLAG: '-'
+'Beta':
+    VALUE: 'B1'
+    FLAG: '-'
+'Psi':
+    VALUE: '0'
+    FLAG: '-'
+'Phi':
+    VALUE: '0'
+    FLAG: '-'
+'LAil':
+    VALUE: '0'
+    FLAG: '-'
+'RAil':
+    VALUE: '0'
+    FLAG: '-'
