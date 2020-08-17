@@ -135,7 +135,7 @@ class DefinitionsWindow:
             tempflag = self.FlagsBox.get(i)
             dataout[tempdef[0].strip()] = {'VALUE':tempdef[1].strip(),'FLAG':tempflag.strip()}
         # Write the dictionary to the yaml file
-        yaml.dump(dataout,FID, default_flow_style=False)
+        yaml.dump(dataout,FID, default_flow_style=False, sort_keys=False)
         self.Status.SetStatus('DEFINITIONS:Template saved.\n','Normal')
         return None
 
