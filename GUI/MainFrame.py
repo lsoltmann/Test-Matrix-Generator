@@ -129,6 +129,7 @@ class MainFrame:
                 if (self.TestMatrix.AddGroup(NewName)):
                     self.GroupBox.insert(tk.END, NewName)
                     self.Status.SetStatus('Group \'{0}\' added.\n'.format(NewName))
+                    # Update the summary
                     self.Summary.Update()
                 else:
                     self.Status.SetStatus('Group \'{0}\' already exists.\n'.format(NewName),'Error')
@@ -148,6 +149,7 @@ class MainFrame:
             self.TestMatrix.RemoveGroup(self.GroupBox.get(Selection[0]))
             # then update stats
             self.Status.SetStatus('Group \'{0}\' removed.\n'.format(self.GroupBox.get(Selection[0])))
+            # Update the summary
             self.Summary.Update()
             # and then finally remove from the list box
             self.GroupBox.delete(Selection[0])
@@ -164,6 +166,7 @@ class MainFrame:
         self.TestMatrix.CopyGroup(GroupName,GroupName+'_copy')
         self.GroupBox.insert(Selection[0]+1, GroupName+'_copy')
         self.Status.SetStatus('Group \'{0}\' copied.\n'.format(GroupName))
+        # Update the summary
         self.Summary.Update()
         return None
 
@@ -217,8 +220,12 @@ class MainFrame:
 
 
     def LoadGroups(self,*args): #args not needed, extra stuff passed in by trace
+        # Clear the list box first
+        self.GroupBox.delete(0,tk.END)
+        # Add the loaded test matrix groups
         for item in self.TestMatrix.GroupNames:
             self.GroupBox.insert(tk.END, item)
+        # Update the summary
         self.Summary.Update()
         return None
 
@@ -326,6 +333,7 @@ class MainFrame:
             self.PopulateParametersBox()
             # Update status
             self.Status.SetStatus('Testpoint added.\n')
+            # Update the summary
             self.Summary.Update()
             return None
     
@@ -349,6 +357,7 @@ class MainFrame:
         # Refresh the test point box
         self.PopulateTestPointBox()
         self.Status.SetStatus('Testpoint removed.\n')
+        # Update the summary
         self.Summary.Update()
         return None
     
@@ -410,6 +419,8 @@ class MainFrame:
         #   Re-select the testpoint
         self.TestPointBox.selection_set(TestPointIdx)
         self.PopulateParametersBox()
+        # Update the summary
+        self.Summary.Update()
         return None
 
 
