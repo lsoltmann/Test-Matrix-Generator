@@ -139,7 +139,7 @@ class ParametersWindow:
             tempflag = self.FlagsBox.get(i)
             dataout[tempparam[0].strip()] = {'VALUE':tempparam[1].strip(),'FLAG':tempflag.strip()}
         # Write the dictionary to the yaml file
-        yaml.dump(dataout,FID, default_flow_style=False)
+        yaml.dump(dataout,FID, default_flow_style=False, sort_keys=False)
         self.Status.SetStatus('PARAMETERS:Template saved.\n','Normal')
         return None
 
