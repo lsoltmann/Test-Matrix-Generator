@@ -3,7 +3,6 @@ from GUI.ParametersWindow import ParametersWindow
 from GUI.DefinitionsWindow import DefinitionsWindow
 from Core.LoadTestMatrix import LoadTestMatrix
 from Core.SaveTestMatrix_Raw import SaveTestMatrix_Raw
-#from Core.SaveTestMatrix_CSV import SaveTestMatrix_CSV
 from GUI.OverwriteCheckWindow import OverwriteCheckWindow
 from tkinter.filedialog import askopenfilename
 import datetime
@@ -49,7 +48,12 @@ class IOFrame:
         # Option menu
         # Get all files in the 'OutputScipts' folder
         OutputFiles = ['NONE']
-        for file in os.listdir('./OutputScripts'):
+
+        # Get OutputScripts Path
+        current_working_directory = os.getcwd()
+        outscript_path = os.path.join(current_working_directory, 'OutputScripts')
+
+        for file in os.listdir(outscript_path):
             if '.py' in file:
                 temp = file.split('.')
                 OutputFiles.append(temp[0])
@@ -116,12 +120,11 @@ class IOFrame:
             TestName = Now.strftime("%d%m%Y_%H%M%S")
         # Save raw matrix
         SaveTestMatrix_Raw(TestName,self.TestMatrix)
-        # Save pretty formatted matrix if checkbox is checked
+        # Save pretty formatted matrix based on the users menu selection
         if self.FormattedOutputType.get() != 'NONE':
             Script = il.import_module('OutputScripts.'+self.FormattedOutputType.get())
             Script = getattr(Script, self.FormattedOutputType.get())
             Script(TestName,self.TestMatrix)
-            #SaveTestMatrix_CSV(TestName,self.TestMatrix)
         else:
             pass
         self.Status.SetStatus('Test matrix saved.\n')
