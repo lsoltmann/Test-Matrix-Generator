@@ -1,6 +1,5 @@
 import tkinter as tk
 from GUI.MainFrame import MainFrame
-#from GUI.IOFrame import IOFrame
 from GUI.StatusFrame import StatusFrame
 from Core.TestMatrix import TestMatrix
 from GUI.SummaryFrame import SummaryFrame
