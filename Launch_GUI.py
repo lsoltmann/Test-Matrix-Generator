@@ -1,17 +1,18 @@
 '''
-    Description: GUI
+    Description: Test matrix generator tool used to make test matrices
+                 for any kind of testing.
     
     Revision History
-    DD MMM 20YY - Created and debugged
+    18 AUG 2020 - Created and debugged
     
     Author: Lars Soltmann
     
     NOTES:
     - Written for python3
-    - Requires: ?
+    - Requires: Pandas, Pyyaml
     
     TODO:
-    - Write program
+    - None
     
     '''
 
