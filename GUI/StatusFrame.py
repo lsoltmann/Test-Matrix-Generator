@@ -15,11 +15,6 @@ class StatusFrame:
         # Create text box
         self.TextBox=tk.Text(Subframe, width=50, height=7, relief=tk.RIDGE, borderwidth=0)
 
-        # Add a vertical scroll bar to the text area
-        #Scroll=tk.Scrollbar(Subframe)
-        #self.TextBox.configure(yscrollcommand=Scroll.set)
-        #Scroll.configure(command=self.TextBox.yview)
-
         # Configure tags for normal, warning, and error messages
         self.TextBox.tag_configure('Normal', foreground='#000000')
         self.TextBox.tag_configure('Warning', foreground='#FF6700') #normal orange = FFA500, dark orange = FF8C00
