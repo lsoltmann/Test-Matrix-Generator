@@ -58,6 +58,13 @@ def Save_CSV(TestName,TestMatrix):
     for i in range(len(TestMatrix.GroupTestPoints)):
         FID.write(',,{0}:,{1}\n'.format(TestMatrix.GroupNames[i],TestMatrix.GroupTestPoints[i].shape[0]))
     FID.write('\n')
+    FID.write('Definitions:\n')
+    for key,value in TestMatrix.Definitions.items():
+        for key2,value2 in value.items():
+            if key2 == 'VALUE':
+                value2 = value2.replace(',',' ')
+                FID.write(',{0}:,{1}\n'.format(key,value2))
+    FID.write('\n')
     FID.close()
     
     # Append test matrix to file
