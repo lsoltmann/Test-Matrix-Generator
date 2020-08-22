@@ -5,14 +5,14 @@ from GUI.IOFrame import IOFrame
 '''
 TODO:
 HIGH PRIORITY
-1. Timing stuff
+1. Concatenate all function in testmatrix
+2. Allow multiple changes in single test point add
 
 MEDIUM PRIORITY
-1.
+1. Timing stuff
 
 LOW PRIORITY
-1. Make setup window blocking like overwrite window - focus appears to be lost when the window is blocking and then closed, although this doesn't appear to happen with overwrite box
-2. Add logo
+1. 
 '''
 
 class MainFrame:
