@@ -3,7 +3,8 @@
                  for any kind of testing.
     
     Revision History
-    18 AUG 2020 - Created and debugged
+    18 AUG 2020 - V1.0 - Created and debugged
+    22 AUG 2020 - V1.1 - Added plotting tool
     
     Author: Lars Soltmann
     
@@ -11,12 +12,9 @@
     - Written for python3
     - Requires: Pandas, Pyyaml
     
-    TODO:
-    - None
-    
-    '''
+'''
 
-Version = '1.0'
+Version = '1.1'
 
 import tkinter as tk
 from GUI.Main import Main
