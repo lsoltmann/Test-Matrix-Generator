@@ -1,6 +1,6 @@
 import pandas as pd
 
-def Save_CSV(TestName,TestMatrix):
+def Basic_CSV(TestName,TestMatrix):
     # ---------- Test Point Matrix -----------
     # Iterate through each of the parameter flags and apply the flag
     ColList = []
