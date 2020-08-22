@@ -1,6 +1,7 @@
 import tkinter as tk
 from GUI.ParametersWindow import ParametersWindow
 from GUI.DefinitionsWindow import DefinitionsWindow
+from GUI.PlotWindow import PlotWindow
 from Core.LoadTestMatrix import LoadTestMatrix
 from Core.SaveTestMatrix_Raw import SaveTestMatrix_Raw
 from GUI.OverwriteCheckWindow import OverwriteCheckWindow
@@ -40,6 +41,8 @@ class IOFrame:
         DefButton    = tk.Button(Subframe, text='DEFINITONS',justify=tk.CENTER, command=self.OpenDefs, width = defaultWidth)
         LoadButton   = tk.Button(Subframe, text='LOAD',justify=tk.CENTER, command=self.LoadMatrix, width = defaultWidth)
         SaveButton   = tk.Button(Subframe, text='SAVE',justify=tk.CENTER, command=self.SaveMatrix, width = defaultWidth)
+        PlotButton   = tk.Button(Subframe, text='PLOT',justify=tk.CENTER, command=self.Plot, width = defaultWidth)
+        TimingButton = tk.Button(Subframe, text='TIMING',justify=tk.CENTER, command=self.Timing, width = defaultWidth)
 
         # Add input fields
         self.TestNameInput = tk.StringVar(Subframe, value = '')
@@ -66,8 +69,10 @@ class IOFrame:
         # Grid the items
         ParamsButton.grid(       row=1, column=0)
         DefButton.grid(          row=1, column=1)
-        LoadButton.grid(         row=1, column=2)
+        LoadButton.grid(         row=0, column=3)
         SaveButton.grid(         row=1, column=3)
+        PlotButton.grid(         row=0, column=2)
+        TimingButton.grid(       row=1, column=2)
         FormattedOutputMenu.grid(row=1, column=4)
         FormattedOuputLabel.grid(row=0,column=4)
         TestNameLabel.grid(      row=0, column=0)
@@ -128,4 +133,20 @@ class IOFrame:
         else:
             pass
         self.Status.SetStatus('Test matrix saved.\n')
+        return None
+
+
+    def Plot(self):
+        # Open the plot window only if a test matrix exists
+        if self.TestMatrix.CheckExistence():
+            PlotWin = tk.Toplevel()
+            PlotWin.resizable(width=tk.FALSE,height=tk.FALSE)
+            PlotWindow(PlotWin,self.TestMatrix,self.Status)
+        else:
+           self.Status.SetStatus('Unable to open plot window. No groups exist.\n','Error')
+        return None
+
+
+    def Timing(self):
+        self.Status.SetStatus('Feature not yet implemented.\n','Warning')
         return None
