@@ -89,14 +89,16 @@ class TimingWindow:
         # Get parameter input field data
         Val = self.TimingInput.get()
         # Make sure input string is formatted correctly
-        if not Val.isnumeric():
-            self.Status.SetStatus('TIMING:Input syntax not recognized. Input must be a int/float.\n','Error')
-        else:
+        try:
+            # Number test
+            float(Val)
             # Remove the old parameter
             self.TimingBox.delete(TimingIdx)
             # Combine and add parameter back to listbox
             self.TimingBox.insert(TimingIdx, TimingName+':'+str(Val))
             self.Status.SetStatus('TIMING:Timing value updated.\n')
+        except:
+            self.Status.SetStatus('TIMING:Input syntax not recognized. Input must be a int/float.\n','Error')
         return None
 
 
