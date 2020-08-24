@@ -212,7 +212,7 @@ class TestMatrix:
 
     def OneMatrix(self):
         # Make a blank dataframe with columns
-        TestMat = pd.DataFrame(MakeParamDict(columns=self.Parameters.keys())
+        TestMat = pd.DataFrame(MakeParamDict(columns=self.Parameters.keys()))
         # Combine all the test point groups
         for i in range(len(self.GroupTestPoints)):
             TestMat = TestMat.append(self.GroupTestPoints[i], ignore_index=True)
