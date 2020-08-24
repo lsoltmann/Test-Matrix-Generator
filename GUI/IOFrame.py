@@ -2,6 +2,7 @@ import tkinter as tk
 from GUI.ParametersWindow import ParametersWindow
 from GUI.DefinitionsWindow import DefinitionsWindow
 from GUI.PlotWindow import PlotWindow
+from GUI.TimingWindow import TimingWindow
 from Core.LoadTestMatrix import LoadTestMatrix
 from Core.SaveTestMatrix_Raw import SaveTestMatrix_Raw
 from GUI.OverwriteCheckWindow import OverwriteCheckWindow
@@ -148,5 +149,7 @@ class IOFrame:
 
 
     def Timing(self):
-        self.Status.SetStatus('Feature not yet implemented.\n','Warning')
+        TimingWin = tk.Toplevel()
+        TimingWin.resizable(width=tk.FALSE,height=tk.FALSE)
+        TimingWindow(TimingWin,self.TestMatrix,self.Status)
         return None

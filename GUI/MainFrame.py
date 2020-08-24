@@ -5,11 +5,10 @@ from GUI.IOFrame import IOFrame
 '''
 TODO:
 HIGH PRIORITY
-1. Concatenate all function in testmatrix
-2. Allow multiple changes in single test point add
+1. Timing algorithm
 
 MEDIUM PRIORITY
-1. Timing stuff
+1. Allow multiple changes in single test point add
 
 LOW PRIORITY
 1. 

@@ -12,19 +12,27 @@ def LoadTestMatrix(FileName,TestMatrix):
     ParamFlags    = RawMatrix.iloc[1].to_dict()
     ParamDefaults = RemoveInternalNames(ParamDefaults)
     ParamFlags    = RemoveInternalNames(ParamFlags)
+    # Save off timing data
+    TimingValues = RawMatrix.iloc[2].to_dict()
+    TimingFlags  = RawMatrix.iloc[3].to_dict()
+    TimingValues = RemoveInternalNames(TimingValues)
+    TimingFlags  = RemoveInternalNames(TimingFlags)
+    # Save the parameters
     for key,value in ParamDefaults.items():
-        TestMatrix.Parameters[key] = {'VALUE':value,'FLAG':ParamFlags[key]}
+        TestMatrix.Parameters[key] = {'VALUE':value,'FLAG':ParamFlags[key],
+                                      'TIMING':{'VALUE':TimingValues[key],
+                                                'FLAG':TimingFlags[key]}}
     # Save off definitions
-    DefNames  = eval(RawMatrix.iloc[[2]]['<DATA>'].values[0])
-    DefValues = eval(RawMatrix.iloc[[3]]['<DATA>'].values[0])
-    DefFlags  = eval(RawMatrix.iloc[[4]]['<DATA>'].values[0])
+    DefNames  = eval(RawMatrix.iloc[[4]]['<DATA>'].values[0])
+    DefValues = eval(RawMatrix.iloc[[5]]['<DATA>'].values[0])
+    DefFlags  = eval(RawMatrix.iloc[[6]]['<DATA>'].values[0])
     for i in range(len(DefNames)):
         TestMatrix.Definitions[DefNames[i]] = {'VALUE':DefValues[i],'FLAG':DefFlags[i]}
 
     # ---- STEP 2 ----
     # Divide up and save the raw matrix to the test matrix
     # Now remove the first row
-    RawMatrix = RawMatrix.drop([0,1,2,3,4],axis=0)
+    RawMatrix = RawMatrix.drop([0,1,2,3,4,5,6],axis=0)
     RawMatrix = RawMatrix.drop(columns='<DATA>')
     # Divide up the remaing rows by group and store in the test matrix
     Groups = RawMatrix['<GROUP>'].unique()

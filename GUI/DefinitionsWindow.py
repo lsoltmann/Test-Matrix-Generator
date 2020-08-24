@@ -107,15 +107,23 @@ class DefinitionsWindow:
                 for key,value in TemplateDefs.items():
                     DefText  = key+':'+str(value['VALUE'])
                     FlagText = str(value['FLAG'])
-                    if FlagText not in self.TestMatrix.DefinitionsFlagsOptions:
-                        self.Status.SetStatus('DEFINITIONS:Unknown flag ''{0}''.\n'.format(FlagText),'Error')
-                        return None
+                    for x in FlagText:
+                        if x not in self.TestMatrix.DefinitionsFlagsOptions:
+                            self.Status.SetStatus('DEFINITIONS:Unknown flag ''{0}''.\n'.format(x),'Error')
+                            return None
                     # Definitions box
                     self.DefinitionsBox.insert(tk.END, DefText)
                     # Flags box
                     self.EnableFlags()
                     self.FlagsBox.insert(tk.END, FlagText)
                     self.DisableFlags()
+                # Check for duplicates
+                temp = [x.split(':')[0] for x in self.DefinitionsBox.get(0,tk.END)]
+                if len(temp) != len(set(temp)):
+                    self.DefinitionsBox.delete(0,tk.END)
+                    self.FlagsBox.delete(0,tk.END)
+                    self.Status.SetStatus('DEFINITIONS:Template contains duplicates.\n','Error')
+                    return None
                 self.Status.SetStatus('DEFINITIONS:Template loaded.\n','Normal')
         except:
             self.Status.SetStatus('DEFINITIONS:Template load error.\n','Error')
@@ -145,6 +153,10 @@ class DefinitionsWindow:
         # Split input
         temp = DefInput.split(':')
         if len(temp) == 2:
+            # Check if definition already exists
+            if temp[0] in [x.split(':')[0] for x in self.DefinitionsBox.get(0,tk.END)]:
+                self.Status.SetStatus('DEFINITIONS:Definition ''{0}'' already exists.\n'.format(temp[0]),'Error')
+                return None
             # Add definition to listbox
             self.DefinitionsBox.insert(tk.END, temp[0]+':'+temp[1])
             self.EnableFlags()

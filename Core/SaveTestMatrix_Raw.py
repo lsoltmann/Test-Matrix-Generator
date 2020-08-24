@@ -4,19 +4,23 @@ import pandas as pd
 Raw Matrix Format:
 Row 1    Default values for parameters
 Row 2    Flag values for parameters
-Row 3    Definition names, 'None' for every column except <DATA>
-Row 4    Definition values, 'None' for every column except <DATA>
-Row 5    Definition flags, 'None' for every column except <DATA>
+Row 3    Timing values for parameters
+Row 4    Timing flags for parameters
+Row 5    Definition names, 'None' for every column except <DATA>
+Row 6    Definition values, 'None' for every column except <DATA>
+Row 7    Definition flags, 'None' for every column except <DATA>
 
 example:
 
-<GROUP>	                Run         Group       Priority
-<PARAMETER DEFAULTS>    #TESTPOINT  &GROUP      1
-<PARAMETER FLAGS>       -           -           -
-<DEFINITION NAMES>      None        None        None
-<DEFINITION VALUES>     None        None        None
-<DEFINITION FLAGS>      None        None        None
-g1                      #TESTPOINT  &GROUP      1
+<GROUP>	                Run         Group       Priority     Alpha
+<PARAMETER DEFAULTS>    #TESTPOINT  &GROUP      1            A1
+<PARAMETER FLAGS>       -           -           -            T
+<TIMING VALUES>         None        None        None         20
+<TIMING FLAGS>          C           C           C            C
+<DEFINITION NAMES>      None        None        None         None
+<DEFINITION VALUES>     None        None        None         None
+<DEFINITION FLAGS>      None        None        None         None
+g1                      #TESTPOINT  &GROUP      1            A1
 
 '''
 
@@ -28,12 +32,20 @@ def SaveTestMatrix_Raw(TestName,TestMatrix):
     FinalMatrix.insert(0, '<GROUP>', '<PARAMETER DEFAULTS>')
     # Add DATA as a column for datat that is not associated with a parameter
     FinalMatrix.insert(len(FinalMatrix.columns), '<DATA>', 'None')
-    # Add the parameter flags as the next row
+    # Add the parameter flags as the second row
     temp = MakeParamDict(TestMatrix.Parameters,'FLAG')
     temp['<GROUP>'] = '<PARAMETER FLAGS>'
     temp['<DATA>'] = 'None'
     FinalMatrix = FinalMatrix.append(temp, ignore_index=True)
-    # Add the definitions as the third row
+    # Add the timing data as the third and fourth rows
+    temp = MakeTimingDict(TestMatrix.Parameters)
+    temp[0]['<GROUP>'] = '<TIMING VALUES>'
+    temp[0]['<DATA>'] = 'None'
+    FinalMatrix = FinalMatrix.append(temp[0], ignore_index=True)
+    temp[1]['<GROUP>'] = '<TIMING FLAGS>'
+    temp[1]['<DATA>'] = 'None'
+    FinalMatrix = FinalMatrix.append(temp[1], ignore_index=True)
+    # Add the definitions as the fifth through seventh rows
     Defs,Values,Flags = SplitDefs(TestMatrix.Definitions)
     # Definition names
     temp = ['None']*(len(FinalMatrix.columns)-1)
@@ -82,3 +94,11 @@ def SplitDefs(Definitions):
         Values.append(value['VALUE'])
         Flags.append(value['FLAG'])
     return Defs,Values,Flags
+
+
+def MakeTimingDict(Parameters):
+    Out = [{},{}]
+    for key,value in Parameters.items():
+        Out[0][key] = Parameters[key]['TIMING']['VALUE']
+        Out[1][key] = Parameters[key]['TIMING']['FLAG']
+    return Out

@@ -10,6 +10,7 @@ class ParametersWindow:
         self.TestMatrix = TestMatrix
         self.Status = Status
         self.Summary = Summary
+        self.ParamsYAML = None
         
         # Window size
         WinWidth  = 330
@@ -72,17 +73,6 @@ class ParametersWindow:
         # Check to to see if a test matrix already exists
         self.CheckForExistingTestMatrix()
 
-    '''
-    def Show(self):
-        # Make window blocking
-        self.Master.grab_set()
-        # Wait for user input
-        self.Master.wait_window()
-        # Remove blocking
-        self.Master.grab_release()
-        return None
-    '''
-
 
     def CheckForExistingTestMatrix(self):
         # If test matrix does exist, populate the parameters box
@@ -100,27 +90,42 @@ class ParametersWindow:
 
     def LoadTemplate(self):
         try:
-            # Clear the list box
-            self.ParameterBox.delete(0,tk.END)
-            # Get full file path
-            FullFilePath = askopenfilename(multiple=False)
-            if FullFilePath != '':
-                # Extract the file name
-                TemplateParams = yaml.safe_load(open(FullFilePath,'r'))
-                # Add the user parameters to the listbox
-                for key,value in TemplateParams.items():
-                    ParamText  = key+':'+str(value['VALUE'])
-                    FlagText   = str(value['FLAG'])
-                    if FlagText not in self.TestMatrix.ParametersFlagsOptions:
-                        self.Status.SetStatus('PARAMETERS:Unknown flag ''{0}''.\n'.format(FlagText),'Error')
+            if self.TestMatrix.CheckExistence() == 1:
+                self.Status.SetStatus('PARAMETERS:Can not load a template, a test matrix already exists.\n','Error')
+            else:
+                # Clear the variable where ther raw YAML data is stored
+                self.ParamsYAML = None
+                # Clear the list box
+                self.ParameterBox.delete(0,tk.END)
+                # Get full file path
+                FullFilePath = askopenfilename(multiple=False)
+                if FullFilePath != '':
+                    # Extract the file name
+                    TemplateParams = yaml.safe_load(open(FullFilePath,'r'))
+                    # Add the user parameters to the listbox
+                    for key,value in TemplateParams.items():
+                        ParamText  = key+':'+str(value['VALUE'])
+                        FlagText   = str(value['FLAG'])
+                        for x in FlagText:
+                            if x not in self.TestMatrix.ParametersFlagsOptions:
+                                self.Status.SetStatus('PARAMETERS:Unknown flag ''{0}''.\n'.format(x),'Error')
+                                return None
+                        # Parameters box
+                        self.ParameterBox.insert(tk.END, ParamText)
+                        # Flags box
+                        self.EnableFlags()
+                        self.FlagsBox.insert(tk.END, FlagText)
+                        self.DisableFlags()
+                    # Check for duplicates
+                    temp = [x.split(':')[0] for x in self.ParameterBox.get(0,tk.END)]
+                    if len(temp) != len(set(temp)):
+                        self.ParameterBox.delete(0,tk.END)
+                        self.FlagsBox.delete(0,tk.END)
+                        self.Status.SetStatus('PARAMETERS:Template contains duplicates.\n','Error')
                         return None
-                    # Parameters box
-                    self.ParameterBox.insert(tk.END, ParamText)
-                    # Flags box
-                    self.EnableFlags()
-                    self.FlagsBox.insert(tk.END, FlagText)
-                    self.DisableFlags()
-                self.Status.SetStatus('PARAMETERS:Template loaded.\n','Normal')
+                    self.Status.SetStatus('PARAMETERS:Template loaded.\n','Normal')
+                    # Save the YAML data
+                    self.ParamsYAML = TemplateParams
         except:
             self.Status.SetStatus('PARAMETERS:Template load error.\n','Error')
         return None
@@ -137,7 +142,20 @@ class ParametersWindow:
             tempparam = self.ParameterBox.get(i)
             tempparam = tempparam.split(':')
             tempflag = self.FlagsBox.get(i)
-            dataout[tempparam[0].strip()] = {'VALUE':tempparam[1].strip(),'FLAG':tempflag.strip()}
+            # Check for an existing test matrix for the timing data
+            if self.TestMatrix.Parameters == {}:
+                # If one doesn't exist, use the defaults
+                TimeVal  = 0
+                TimeFlag = self.TestMatrix.TimingFlagOptions[0]
+            else:
+                if tempparam[0] in self.TestMatrix.Parameters:
+                    TimeVal = self.TestMatrix.Parameters[tempparam[0]]['TIMING']['VALUE']
+                    TimeFlag = self.TestMatrix.Parameters[tempparam[0]]['TIMING']['FLAG']
+                else:
+                    TimeVal  = 0
+                    TimeFlag = self.TestMatrix.TimingFlagOptions[0]   
+            dataout[tempparam[0].strip()] = {'VALUE':tempparam[1].strip(),'FLAG':tempflag.strip(),
+                                             'TIMING':{'VALUE':TimeVal,'FLAG':TimeFlag}}
         # Write the dictionary to the yaml file
         yaml.dump(dataout,FID, default_flow_style=False, sort_keys=False)
         self.Status.SetStatus('PARAMETERS:Template saved.\n','Normal')
@@ -149,6 +167,10 @@ class ParametersWindow:
         # Split input
         temp = ParamInput.split(':')
         if len(temp) == 2:
+            # Check if parameter already exists
+            if temp[0] in [x.split(':')[0] for x in self.ParameterBox.get(0,tk.END)]:
+                self.Status.SetStatus('PARAMETERS:Parameter ''{0}'' already exists.\n'.format(temp[0]),'Error')
+                return None
             # Add parameter to listbox
             self.ParameterBox.insert(tk.END, temp[0]+':'+temp[1])
             self.EnableFlags()
@@ -293,7 +315,14 @@ class ParametersWindow:
         if self.TestMatrix.CheckExistence() == 0:
             for x in CombinedList:
                 temp = [y.strip() for y in x.split(':')]
-                self.TestMatrix.AddParameter(temp[0],temp[1],temp[2])
+                if self.ParamsYAML is not None:
+                    if temp[0] in self.ParamsYAML:
+                        self.TestMatrix.AddParameter(temp[0],temp[1],temp[2],{'FLAG':self.ParamsYAML[temp[0]]['TIMING']['FLAG'],
+                                                                              'VALUE':self.ParamsYAML[temp[0]]['TIMING']['VALUE']})
+                    else:
+                        self.TestMatrix.AddParameter(temp[0],temp[1],temp[2],{'FLAG':'C','VALUE':0})
+                else:
+                    self.TestMatrix.AddParameter(temp[0],temp[1],temp[2],{'FLAG':'C','VALUE':0})
 
         # --- CASE 2 --- Previous test matrix exists    
         elif self.TestMatrix.CheckExistence() == 1:
@@ -303,10 +332,10 @@ class ParametersWindow:
             for x in CombinedList:
                 temp = [y.strip() for y in x.split(':')]
                 if temp[0] not in self.TestMatrix.Parameters:
-                    self.TestMatrix.AddParameter(temp[0],temp[1],temp[2])
+                    self.TestMatrix.AddParameter(temp[0],temp[1],temp[2],{'FLAG':'C','VALUE':0})
                 # Append parameter name to order list
                 ParamsOrder.append(temp[0])
-                    
+       
             # 2, check to see if user removed any parameters
             RemoveList = []
             for key,value in self.TestMatrix.Parameters.items():
@@ -326,7 +355,7 @@ class ParametersWindow:
             # 4, update all the parameter values and flags
             for x in CombinedList:
                 temp = [y.strip() for y in x.split(':')]
-                self.TestMatrix.ModifyParameter(temp[0],temp[1],temp[2])
+                self.TestMatrix.ModifyParameter(temp[0],temp[1],temp[2])        
 
         self.Status.SetStatus('PARAMETERS:Saved.\n')
         self.Summary.Update()

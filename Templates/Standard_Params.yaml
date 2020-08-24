@@ -1,33 +1,66 @@
 'Run':
     VALUE: '#TESTPOINT'
     FLAG: '-'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0
 'Group':
     VALUE: '&GROUP'
     FLAG: '-'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0
 'Priority':
     VALUE: '1'
     FLAG: '-'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0
 'Configuration':
     VALUE: 'C1'
     FLAG: '-'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0
 'Q':
     VALUE: '60'
     FLAG: '-'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0
 'Alpha':
     VALUE: 'A1'
-    FLAG: '-'
+    FLAG: 'T'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0.0056
 'Beta':
     VALUE: 'B1'
-    FLAG: '-'
+    FLAG: 'T'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0.0056
 'Psi':
     VALUE: '0'
     FLAG: '-'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0
 'Phi':
     VALUE: '0'
     FLAG: '-'
+    TIMING:
+        FLAG: 'C'
+        VALUE: 0
 'LAil':
     VALUE: '0'
-    FLAG: '-'
+    FLAG: 'T'
+    TIMING:
+        FLAG: 'D'
+        VALUE: 0.1667
 'RAil':
     VALUE: '0'
     FLAG: '-'
+    TIMING:
+        FLAG: 'D'
+        VALUE: 0.1667

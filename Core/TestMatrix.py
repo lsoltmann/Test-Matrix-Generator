@@ -12,7 +12,7 @@ class TestMatrix:
         self.Parameters = {}
         # Parameter flag options
         # NOTE: first entry must be the 'null flag'
-        self.ParametersFlagsOptions = ['-','*','S']
+        self.ParametersFlagsOptions = ['-','*','S','T']
         
         # Nested dictionary containing the definitions used in the test matrix and their flags
         # Format: {'<DefName>':{'VALUE':<Value>,'FLAG':<Flag>},...}
@@ -20,6 +20,10 @@ class TestMatrix:
         # Definitions flag options
         # NOTE: first entry must be the 'null flag'
         self.DefinitionsFlagsOptions = ['-','R']
+
+        # Timing flags
+        # NOTE: first entry must be the default flag (constant time)
+        self.TimingFlagOptions = ['C','D','S']
 
 
     def ClearTestMatrix(self):
@@ -50,9 +54,11 @@ class TestMatrix:
         return None
     
 
-    def AddParameter(self,Name,Val,Flag):
+    def AddParameter(self,Name,Val,Flag,TimingDict):
         # Add to parameters dictionary
-        self.Parameters[Name] = {'VALUE':Val,'FLAG':Flag}
+        self.Parameters[Name] = {'VALUE':Val,'FLAG':Flag,
+                                 'TIMING':{'VALUE':TimingDict['VALUE'],
+                                           'FLAG':TimingDict['FLAG']}}
         # If a test matrix exists, add the parameter with default value to every group
         if self.CheckExistence() == 1:
             for df in self.GroupTestPoints:
@@ -67,7 +73,8 @@ class TestMatrix:
         NewVal = Val
         OldVal = self.Parameters[Name]['VALUE']
         # Modify the default
-        self.Parameters[Name] = {'VALUE':Val,'FLAG':Flag}
+        self.Parameters[Name]['VALUE'] = Val
+        self.Parameters[Name]['FLAG'] = Flag
         # Change in all test point groups IF AND ONLF IF the value
         # was still set to the default
         for i in range(len(self.GroupTestPoints)):
@@ -168,6 +175,8 @@ class TestMatrix:
         Idx = self.GroupNames.index(GroupName)
         # Drop the test point
         self.GroupTestPoints[Idx] = self.GroupTestPoints[Idx].drop(TestPointIdx,axis=0)
+        # Reset the index
+        self.GroupTestPoints[Idx] = self.GroupTestPoints[Idx].reset_index(drop=True)
         return None
 
     def MoveTestPoint(self,GroupName,TestPointIdx,Dir):
@@ -193,6 +202,21 @@ class TestMatrix:
         # Modify the parameter
         self.GroupTestPoints[Idx][Parameter].values[TestPointIdx] = Val            
         return None
+
+
+    def UpdateTiming(self,Name,Val,Flag):
+        # Update the timing values and flags
+        self.Parameters[Name]['TIMING']['VALUE'] = Val
+        self.Parameters[Name]['TIMING']['FLAG'] = Flag
+
+
+    def OneMatrix(self):
+        # Make a blank dataframe with columns
+        TestMat = pd.DataFrame(MakeParamDict(columns=self.Parameters.keys())
+        # Combine all the test point groups
+        for i in range(len(self.GroupTestPoints)):
+            TestMat = TestMat.append(self.GroupTestPoints[i], ignore_index=True)
+        return TestMat
 
 
     # DEBUG FUNCTION
