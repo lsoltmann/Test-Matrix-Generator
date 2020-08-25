@@ -162,7 +162,7 @@ class MainFrame:
             self.Status.SetStatus('No group selected.\n','Error')
             return None
         GroupName = self.GroupBox.get(Selection[0])
-        self.TestMatrix.CopyGroup(GroupName,GroupName+'_copy')
+        self.TestMatrix.CopyGroup(GroupName,GroupName+'_copy',Selection[0]+1)
         self.GroupBox.insert(Selection[0]+1, GroupName+'_copy')
         self.Status.SetStatus('Group \'{0}\' copied.\n'.format(GroupName))
         # Update the summary

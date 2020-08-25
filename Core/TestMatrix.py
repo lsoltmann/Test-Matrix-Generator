@@ -128,13 +128,13 @@ class TestMatrix:
             return 1
 
 
-    def CopyGroup(self,GroupName,CopyName):
-        # Append copied group name
-        self.GroupNames.append(CopyName)
+    def CopyGroup(self,GroupName,CopyName,CopyIdx):
+        # Insert copied group name
+        self.GroupNames.insert(CopyIdx, CopyName)
         # Get the group index
         Idx = self.GroupNames.index(GroupName)
         # Copy the test point group
-        self.GroupTestPoints.append(self.GroupTestPoints[Idx])
+        self.GroupTestPoints.insert(CopyIdx,self.GroupTestPoints[Idx])
         return None
 
 
