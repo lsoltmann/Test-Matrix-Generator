@@ -8,7 +8,7 @@ HIGH PRIORITY
 1. Timing algorithm
 
 MEDIUM PRIORITY
-1. Allow multiple changes in single test point add
+1. 
 
 LOW PRIORITY
 1. 

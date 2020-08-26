@@ -7,7 +7,8 @@ InputType:
 SINGLE
 Format: PARAM:VAL
         PARAM1:VAL1,PARAM2:VAL2,...
-        - VAL can be a list, string, or int/float
+        - VAL can be a list, string, or int/float. If list, added as is
+        - Produces a single test point
         
 MULTIPLE
 Format: PARAM1:[VAL11,VA12,...],PARAM2:[VAL21,VAL22,...],...
@@ -53,26 +54,26 @@ def GenerateTestPoint(InputStr,InputType,Parameters):
             # Now remove those lists from the original input string
             for item in ListItems:
                 InputStr = InputStr.replace(item,'')
-            # Now split a the comma
-            SingleItems = NonListInput.findall(InputStr)           
+            # Now split at the comma
+            SingleItems = NonListInput.findall(InputStr)
+            # Copy the default parmeters
+            TestPointDict = MakeParametersDict(Parameters)
             # Now add the single items to the test points first if there are any
             if SingleItems != []:
                 for item in SingleItems:
-                    TestPointDict = MakeParametersDict(Parameters)
                     temp = item.split(':')
                     if temp[0].strip() not in Parameters:
                         return 1,[]
                     TestPointDict[temp[0].strip()] = temp[1].strip()
-                    TestPointList.append(TestPointDict)
             # And finally add the list items to the test points if there are any
             if ListItems != []:
                 for item in ListItems:
-                    TestPointDict = MakeParametersDict(Parameters)
                     temp = item.split(':')
                     if temp[0].strip() not in Parameters:
                         return 1,[]
                     TestPointDict[temp[0].strip()] = temp[1].strip()
-                    TestPointList.append(TestPointDict)
+            # Append the new parameter dictionary to the output
+            TestPointList.append(TestPointDict)
             return 0,TestPointList
   
     elif InputType == 'MULTIPLE':
