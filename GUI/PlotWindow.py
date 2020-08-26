@@ -230,16 +230,10 @@ class PlotWindow:
         if ZSel != 'NULL':
             ZSel = self.ZBox.get(ZSel[0])
 
-        # Run through each selected variable and make sure they are plot compatible:
-        # 1. Each test point contains only a single point for each variable.
-        # 2. Each test point contains only a single list in one of the plot variables
-        #    and the others are single points.
-        # 3. Each test point contains more than one list but each list is the same
-        #    length. Plotting will be done elementwise.
-
-        AllPlotData = np.array([[np.nan,np.nan,np.nan]])
+        # Initialize hull array (stores from all selected groups)
+        AllPlotData = np.array([[np.nan,np.nan,np.nan]]) 
         for g in range(len(GNames)):
-            # Initialize plot array
+            # Initialize plot array (stores group data)
             PlotData = np.array([[np.nan,np.nan,np.nan]])
             # Extract x,y,z data
             xdata = self.PlotFrame.loc[self.PlotFrame['GROUP'] == GNames[g]][XSel].values
@@ -249,49 +243,20 @@ class PlotWindow:
             xdata = [eval(i) for i in xdata]
             ydata = [eval(i) for i in ydata]
             zdata = [eval(i) for i in zdata]
-        
+            
             for i in range(len(xdata)):
-                # Make them all lists if they aren't already.
-                if not isinstance(xdata[i], list):
-                    xdata[i] = [xdata[i]]
-                if not isinstance(ydata[i], list):
-                    ydata[i] = [ydata[i]]
-                if not isinstance(zdata[i], list):
-                    zdata[i] = [zdata[i]]
-                # Check the length of each data segment and
-                # lengthen it if it is equal to one. 
-                xlen = len(xdata[i])
-                ylen = len(ydata[i])
-                zlen = len(zdata[i])
-                Maxlen = max([len(xdata[i]),len(ydata[i]),len(zdata[i])])
-                
-                if (xlen != Maxlen) and (xlen != 1):
-                    self.Status.SetStatus('PLOT:''x'' data length not compatible.\n','Error')
-                    return None
-                elif xlen == 1:
-                    xdata[i] = xdata[i]*Maxlen
-                    
-                if (ylen != Maxlen) and (ylen != 1):
-                    self.Status.SetStatus('PLOT:''y'' data length not compatible.\n','Error')
-                    return None
-                elif ylen == 1:
-                    ydata[i] = ydata[i]*Maxlen
-                    
-                if (zlen != Maxlen) and (zlen != 1):
-                    self.Status.SetStatus('PLOT:''z'' data length not compatible.\n','Error')
-                    return None
-                elif zlen == 1:
-                    zdata[i] = zdata[i]*Maxlen
-                # Add to the data array
-                PlotData    = np.concatenate((PlotData,np.array([xdata[i],ydata[i],zdata[i]]).T),axis=0)
-                AllPlotData = np.concatenate((AllPlotData,np.array([xdata[i],ydata[i],zdata[i]]).T),axis=0)
+                # Make an ND grid
+                xgrid,ygrid,zgrid = np.meshgrid(xdata[i],ydata[i],zdata[i])
+                # Assemble the data
+                PlotData    = np.concatenate((PlotData,np.array([xgrid.flatten(),ygrid.flatten(),zgrid.flatten()]).T),axis=0)
+                # Plot the data (group)
+                AllPlotData = np.concatenate((AllPlotData,np.array([xgrid.flatten(),ygrid.flatten(),zgrid.flatten()]).T),axis=0)
             # Remove the first row (its just nan's)
             PlotData = np.delete(PlotData, 0, axis=0)
             # Plot the data
             self.Markers = np.roll(self.Markers,1)
             self.DataGraph.plot3D(PlotData[:,0], PlotData[:,1], PlotData[:,2],self.Markers[0],label=GNames[g])
 
-            
         # Check if convex hull should be plotted
         if self.IncludeHull.get():
             # Remove the first row (its just nan's)
