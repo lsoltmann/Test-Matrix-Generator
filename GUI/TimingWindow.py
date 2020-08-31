@@ -5,10 +5,11 @@ from tkinter.filedialog import asksaveasfilename
 
 
 class TimingWindow:
-    def __init__(self,Master,TestMatrix,Status):
+    def __init__(self,Master,TestMatrix,Summary,Status):
         self.Master = Master
         self.TestMatrix = TestMatrix
         self.Status = Status
+        self.Summary = Summary
         
         # Window size
         WinWidth  = 330
@@ -151,5 +152,6 @@ class TimingWindow:
             temp = TimingList[i].split(':')
             self.TestMatrix.UpdateTiming(temp[0],float(temp[1]),TimingFlagList[i])            
         self.Status.SetStatus('TIMING:Saved.\n')
+        self.Summary.Update()
         # Close the window
         self.Master.destroy()

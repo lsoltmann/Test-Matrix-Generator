@@ -123,6 +123,14 @@ class ParametersWindow:
                         self.FlagsBox.delete(0,tk.END)
                         self.Status.SetStatus('PARAMETERS:Template contains duplicates.\n','Error')
                         return None
+                    # Check for multiple time storage parmeters
+                    temp = self.FlagsBox.get(0, tk.END)
+                    if 'Z' in temp:
+                        if temp.count('Z') > 1:
+                            self.ParameterBox.delete(0,tk.END)
+                            self.FlagsBox.delete(0,tk.END)
+                            self.Status.SetStatus('PARAMETERS:Template contains one than one time storage parameter.\n','Error')
+                            return None
                     self.Status.SetStatus('PARAMETERS:Template loaded.\n','Normal')
                     # Save the YAML data
                     self.ParamsYAML = TemplateParams
@@ -292,6 +300,18 @@ class ParametersWindow:
                    Error = 1
             if Error == 1:
                 Flag = self.TestMatrix.ParametersFlagsOptions[0]
+        # Check if the input flag is the timing flag and warn if there is no time storage parameter
+        if 'T' in Flag:
+            if 'Z' not in self.FlagsBox.get(0, tk.END):
+                self.Status.SetStatus('PARAMETERS:No time storage parameter found. Add one using the ''Z'' flag.\n','Warning')
+        # Check if more than one time storage parameter exists
+        if 'Z' in self.FlagsBox.get(0, tk.END) and Flag == 'Z':
+            self.Status.SetStatus('PARAMETERS:A time storage parameter already exists. Setting flag to null.\n','Error')
+            Flag = self.TestMatrix.ParametersFlagsOptions[0]
+        # Check if Z and T exist together
+        if 'Z' and 'T' in Flag:
+            self.Status.SetStatus('PARAMETERS:The time storage flag and timing flag can not be used on the same parameter. Using ''T'' only.\n','Error')
+            Flag = 'Z'
         # Update the list box
         self.EnableFlags()
         self.FlagsBox.delete(ParamIdx)
@@ -355,7 +375,18 @@ class ParametersWindow:
             # 4, update all the parameter values and flags
             for x in CombinedList:
                 temp = [y.strip() for y in x.split(':')]
-                self.TestMatrix.ModifyParameter(temp[0],temp[1],temp[2])        
+                self.TestMatrix.ModifyParameter(temp[0],temp[1],temp[2])
+
+        # Warn the user if they set any time flags but didn't add a time storage parameter.
+        Zfound = 0
+        Tfound = 0
+        for key,value in self.TestMatrix.Parameters.items():
+            if 'T' in value['FLAG']:
+                Tfound = 1
+            if 'Z' in value['FLAG']:
+                Zfound = 1
+        if Tfound == 1 and Zfound == 0:
+            self.Status.SetStatus('PARAMETERS:No time storage parameter found. No time calcluations will be performed.\n','Warning')
 
         self.Status.SetStatus('PARAMETERS:Saved.\n')
         self.Summary.Update()

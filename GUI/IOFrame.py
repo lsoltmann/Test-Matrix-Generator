@@ -151,5 +151,5 @@ class IOFrame:
     def Timing(self):
         TimingWin = tk.Toplevel()
         TimingWin.resizable(width=tk.FALSE,height=tk.FALSE)
-        TimingWindow(TimingWin,self.TestMatrix,self.Status)
+        TimingWindow(TimingWin,self.TestMatrix,self.Summary,self.Status)
         return None
