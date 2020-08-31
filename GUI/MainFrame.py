@@ -5,13 +5,13 @@ from GUI.IOFrame import IOFrame
 '''
 TODO:
 HIGH PRIORITY
-1. Timing algorithm
+1.
 
 MEDIUM PRIORITY
-1. 
+1.
 
 LOW PRIORITY
-1. 
+1.
 '''
 
 class MainFrame:
@@ -281,6 +281,7 @@ class MainFrame:
                 Tag = str(i) + ': '
                 for j in TestPointFrame.columns:
                     Tag = Tag + j + '=' + str(TestPointFrame[j].values[i]) + ','
+                Tag = Tag[:-1]
                 self.TestPointBox.insert(tk.END, Tag)
         return None
 
@@ -383,10 +384,12 @@ class MainFrame:
             self.TestMatrix.MoveTestPoint(GroupName,TestPointIdx,Dir)
         # Refresh the test point listbox
         self.PopulateTestPointBox()
-        # Update status
+        # Update status and highlight the moved test point
         if Dir == 'UP':
+            self.TestPointBox.selection_set(TestPointIdx-1)
             self.Status.SetStatus('Test point {0} moved up.\n'.format(TestPointIdx))
         elif Dir == 'DOWN':
+            self.TestPointBox.selection_set(TestPointIdx+1)
             self.Status.SetStatus('Test point {0} moved down.\n'.format(TestPointIdx))
         return None
     
