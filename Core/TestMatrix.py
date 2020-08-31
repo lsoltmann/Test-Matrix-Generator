@@ -12,7 +12,7 @@ class TestMatrix:
         self.Parameters = {}
         # Parameter flag options
         # NOTE: first entry must be the 'null flag'
-        self.ParametersFlagsOptions = ['-','*','S','T']
+        self.ParametersFlagsOptions = ['-','*','S','T','Z']
         
         # Nested dictionary containing the definitions used in the test matrix and their flags
         # Format: {'<DefName>':{'VALUE':<Value>,'FLAG':<Flag>},...}
@@ -212,7 +212,7 @@ class TestMatrix:
 
     def OneMatrix(self):
         # Make a blank dataframe with columns
-        TestMat = pd.DataFrame(MakeParamDict(columns=self.Parameters.keys()))
+        TestMat = pd.DataFrame(columns=self.Parameters.keys())
         # Combine all the test point groups
         for i in range(len(self.GroupTestPoints)):
             TestMat = TestMat.append(self.GroupTestPoints[i], ignore_index=True)
