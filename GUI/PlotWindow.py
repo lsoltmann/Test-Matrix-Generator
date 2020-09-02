@@ -137,6 +137,9 @@ class PlotWindow:
                     try:
                         # If its not a number or list, it will fail the eval test
                         num = eval(Value)
+                        # Check if Value is 'None'
+                        if num is None:
+                            ParamPassLocal[df.columns.get_loc(col)] = 0
                     except:
                         # However, it may be using a definition so we
                         # need to check the definitions to see if it
