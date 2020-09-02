@@ -1,6 +1,6 @@
 import pandas as pd
 
-def Basic_CSV(TestName,TestMatrix):
+def Basic_CSV(TestName,TestMatrix,Summary):
     # ---------- Test Point Matrix -----------
     # Iterate through each of the parameter flags and apply the flag
     ColList = []
@@ -47,16 +47,33 @@ def Basic_CSV(TestName,TestMatrix):
             FinalMatrix.loc[FinalMatrix.shape[0]] = temp
 
     # ---------- Header information -----------
+    # Get summary information from the summary class
+    SumParams,TimeParam = Summary.ReturnSummary()
+    # Get total time
+    T_tot = 0
+    T_grp = []
+    if TimeParam is not None:
+        for i in range(len(TestMatrix.GroupTestPoints)):
+            T_grp.append(sum(TestMatrix.GroupTestPoints[i][TimeParam].values))
+            T_tot += T_grp[-1]
+    else:
+        T_grp = [0]*len(TestMatrix.GroupTestPoints)
+    # Start the save file
     FID = open(TestName+'.csv', 'w')
     # Write header information
     FID.write('Test Name:,{0}\n\n'.format(TestName))
     # Test point summary
-    FID.write('Test Matrix Summary:\n')
-    FID.write(',Test Points:,{0}\n'.format(FinalMatrix.shape[0]))
-    FID.write(',Groups:,{0}\n'.format(len(TestMatrix.GroupTestPoints)))
-    FID.write(',Test Points per Group:\n')
+    FID.write('Test Matrix Summary:,,,Number,Time\n')
+    FID.write(',Test Points:,,{0},{1:.3f}\n'.format(FinalMatrix.shape[0],T_tot))
+    FID.write(',Groups:,\n')
     for i in range(len(TestMatrix.GroupTestPoints)):
-        FID.write(',,{0}:,{1}\n'.format(TestMatrix.GroupNames[i],TestMatrix.GroupTestPoints[i].shape[0]))
+        FID.write(',,{0}:,{1},{2:.3f}\n'.format(TestMatrix.GroupNames[i],TestMatrix.GroupTestPoints[i].shape[0],T_grp[i]))
+    if SumParams != {}:
+        FID.write('\n')
+        FID.write('Parameter Summary:,Value,Number\n')
+        for x in SumParams:
+            for key,value in SumParams[x].items():
+                FID.write(',{0} = {1},{2:.3f}\n'.format(x,key,value[0],value[1]))
     FID.write('\n')
     FID.write('Definitions:\n')
     for key,value in TestMatrix.Definitions.items():
