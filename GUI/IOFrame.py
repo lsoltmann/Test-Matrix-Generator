@@ -130,7 +130,7 @@ class IOFrame:
         if self.FormattedOutputType.get() != 'NONE':
             Script = il.import_module('OutputScripts.'+self.FormattedOutputType.get())
             Script = getattr(Script, self.FormattedOutputType.get())
-            Script(TestName,self.TestMatrix)
+            Script(TestName,self.TestMatrix,self.Summary)
         else:
             pass
         self.Status.SetStatus('Test matrix saved.\n')
