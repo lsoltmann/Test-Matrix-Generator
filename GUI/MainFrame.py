@@ -5,13 +5,13 @@ from GUI.IOFrame import IOFrame
 '''
 TODO:
 HIGH PRIORITY
-1.
+1. 
 
 MEDIUM PRIORITY
 1.
 
 LOW PRIORITY
-1.
+1. 
 '''
 
 class MainFrame:
@@ -43,7 +43,7 @@ class MainFrame:
         #Scrollbar2              = tk.Scrollbar(Subframe)
         #Scrollbar3              = tk.Scrollbar(Subframe)
         self.GroupBox           = tk.Listbox(Subframe,width=defaultWidth,height=defaultHeight,exportselection=False)#,yscrollcommand=Scrollbar1.set)
-        self.TestPointBox       = tk.Listbox(Subframe,width=defaultWidth,height=defaultHeight,exportselection=False)#,yscrollcommand=Scrollbar2.set)
+        self.TestPointBox       = tk.Listbox(Subframe,width=defaultWidth,height=defaultHeight,exportselection=False,selectmode=tk.EXTENDED)#,yscrollcommand=Scrollbar2.set)
         self.TestPointParamsBox = tk.Listbox(Subframe,width=defaultWidth,height=defaultHeight,exportselection=False)#,yscrollcommand=Scrollbar3.set)
         #Scrollbar1.configure(command=self.GroupBox.yview)
         #Scrollbar2.configure(command=self.TestPointBox.yview)
@@ -238,28 +238,6 @@ class MainFrame:
         Idx = self.GroupBox.curselection()[0]
         # Isolate the test point group
         TestPointFrame = self.TestMatrix.GroupTestPoints[Idx]
-
-        ##### METHOD 1 #####
-        '''
-        # Iterate through each row and column and see if each row value in the given
-        # column is unique, if it is, add it to the tag
-        # Row iteration
-        for i in range(len(TestPointFrame)):
-            Tag = str(i)+': '
-            # Column iteration
-            for j in range(len(TestPointFrame.columns)):
-                # Get the number of occurances of each unique item in column
-                item   = TestPointFrame[TestPointFrame.columns[j]].value_counts().keys().tolist() #value of the row item
-                counts = TestPointFrame[TestPointFrame.columns[j]].value_counts().tolist()        #number of occurances of the row item
-                # Iterate through the results and add the items that have 1 occurance and are in the current tespoint to the tag 
-                for k in range(len(item)):
-                    if (counts[k] == 1) and (item[k] == TestPointFrame[TestPointFrame.columns[j]].values[i]):
-                        Tag = Tag + TestPointFrame.columns[j] + '=' + str(item[k]) + ','
-            Tag = Tag[:-1]
-            self.TestPointBox.insert(tk.END, Tag)
-        '''
-
-        ##### METHOD 2 #####
         # Check if all values in each column are the same
         TagCol = []
         for i in range(len(TestPointFrame.columns)):
@@ -290,22 +268,31 @@ class MainFrame:
         # Clear the parameters box
         self.TestPointParamsBox.delete(0, tk.END)
         # Get the currently selected test point and group
-        # First get test point and see if one is selcted, otherwise pass
         Idx_testpoint = self.TestPointBox.curselection()
-        if Idx_testpoint != ():
-            # Just save the first element of the tuple
-            Idx_testpoint = Idx_testpoint[0]
-            Idx_group     = self.GroupBox.curselection()[0]
-            # Isolate the test point group
-            TestPointFrame = self.TestMatrix.GroupTestPoints[Idx_group]
-            # Isolate the test point itself
-            Vals = TestPointFrame.iloc[Idx_testpoint].values
-            # Iterate through all the parameters and populate the box
-            for i in range(len(TestPointFrame.columns)):
-                self.TestPointParamsBox.insert(tk.END, TestPointFrame.columns[i] + ': ' + str(Vals[i]))
-        else:
+        Idx_group     = self.GroupBox.curselection()[0]
+        if Idx_testpoint == ():
             pass
-        return None
+        else:
+            # Turn the tuple into a list
+            Idx_testpoint = list(Idx_testpoint)
+            # Grab the parameter names
+            ParamNames = self.TestMatrix.GroupTestPoints[Idx_group].columns
+            # Grab the parameter values from the first selection
+            # NOTE: assigning df.values to variable does not create a copy, it creates a link. We need a
+            # copy so iterate through to create a new list.
+            ParamVals  = [x for x in self.TestMatrix.GroupTestPoints[Idx_group].iloc[Idx_testpoint[0]].values]
+            # Remove the first selection entry since we already copied it
+            del Idx_testpoint[0]
+            for i in Idx_testpoint:
+                temp = self.TestMatrix.GroupTestPoints[Idx_group].iloc[i].values
+                for j in range(len(temp)):
+                    if temp[j] != ParamVals[j]:
+                        ParamVals[j] = '<VARIES>'
+            # Iterate through all the parameters and populate the box
+            for i in range(len(ParamVals)):
+                self.TestPointParamsBox.insert(tk.END, ParamNames[i] + ': ' + str(ParamVals[i]))
+
+        
 
     def AddTestPoint(self):
         # Get group selection in listbox
@@ -392,7 +379,7 @@ class MainFrame:
             self.TestPointBox.selection_set(TestPointIdx+1)
             self.Status.SetStatus('Test point {0} moved down.\n'.format(TestPointIdx))
         return None
-    
+
 
     def UpdateParameter(self):
         # Get group, testpoint, and parameter selections from listbox
@@ -405,7 +392,7 @@ class MainFrame:
         if TestPointSelection == ():
             self.Status.SetStatus('No test point selected.\n','Error')
             return None
-        TestPointIdx = TestPointSelection[0]
+        TestPointIdx = TestPointSelection
         ParamsSelection = self.TestPointParamsBox.curselection()
         if ParamsSelection == ():
             self.Status.SetStatus('No parameter selected.\n','Error')
@@ -415,11 +402,13 @@ class MainFrame:
         # Get parameter input field data
         Val = self.ParameterInput.get()
         # Update parameter value
-        self.TestMatrix.UpdateParameter(GroupName,TestPointIdx,ParameterName,Val)
+        for i in TestPointIdx:
+            self.TestMatrix.UpdateParameter(GroupName,i,ParameterName,Val)
         # Refresh the test point and parameters listbox
         self.PopulateTestPointBox()
         #   Re-select the testpoint
-        self.TestPointBox.selection_set(TestPointIdx)
+        for i in TestPointIdx:
+            self.TestPointBox.selection_set(i)
         self.PopulateParametersBox()
         # Update the summary
         self.Summary.Update()
