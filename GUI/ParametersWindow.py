@@ -34,6 +34,12 @@ class ParametersWindow:
         # Add list box
         self.ParameterBox = tk.Listbox(Subframe,width=defaultWidth,height=defaultHeight,exportselection=0)
         self.FlagsBox     = tk.Listbox(Subframe,width=3,height=defaultHeight)
+        self.ParameterBox.bind('<MouseWheel>',self.MouseScroll)
+        self.FlagsBox.bind('<MouseWheel>',self.MouseScroll)
+        self.ParameterBox.bind('<Up>',self.ArrowScrollUp)
+        self.FlagsBox.bind('<Up>',self.ArrowScrollUp)
+        self.ParameterBox.bind('<Down>',self.ArrowScrollDown)
+        self.FlagsBox.bind('<Down>',self.ArrowScrollDown)
 
         # Add input fields
         self.ParameterInput = tk.StringVar(Subframe, value = '')
@@ -47,8 +53,8 @@ class ParametersWindow:
         SaveCloseButton       = tk.Button(Subframe, text='SAVE AND CLOSE',justify=tk.CENTER, command=self.Export, width = defaultWidth)
         MoveParamUpButton     = tk.Button(Subframe, text=u"\u25B2",justify=tk.CENTER, command=lambda:self.Move('UP'), width = int(defaultWidth/2))
         MoveParamDownButton   = tk.Button(Subframe, text=u"\u25BC",justify=tk.CENTER, command=lambda:self.Move('DOWN'), width = int(defaultWidth/2))
-        UpdateParamButton     = tk.Button(Subframe, text='UPDATE',justify=tk.CENTER, command=self.Update, width = int(defaultWidth/2))
-        FlagButton            = tk.Button(Subframe, text='SET FLAG',justify=tk.CENTER, command=self.SetFlag, width = int(defaultWidth/2))
+        UpdateParamButton     = tk.Button(Subframe, text='UPDATE VALUE',justify=tk.CENTER, command=self.Update, width = int(defaultWidth/2))
+        FlagButton            = tk.Button(Subframe, text='UPDATE FLAG',justify=tk.CENTER, command=self.SetFlag, width = int(defaultWidth/2))
 
         # Grid the items
         LoadTemplateButton.grid(    row=0, column=0)
@@ -173,20 +179,33 @@ class ParametersWindow:
     def Add(self):
         ParamInput = self.ParameterInput.get()
         # Split input
+        # Input format: Name:Value,Flag or Name:Value
         temp = ParamInput.split(':')
+        # Check if more than one colon exists
+        if len(temp) != 2:
+            self.Status.SetStatus('PARAMETERS:Input syntax not recognized. Input format is NAME:VAL or NAME:VAL,FLAG\n','Error')
+            return None
+        # Extract parameter name
+        ParamName = temp[0]
+        # Check if a flag was included
+        temp = temp[1].split(',')
+        ParamVal = temp[0]
         if len(temp) == 2:
-            # Check if parameter already exists
-            if temp[0] in [x.split(':')[0] for x in self.ParameterBox.get(0,tk.END)]:
-                self.Status.SetStatus('PARAMETERS:Parameter ''{0}'' already exists.\n'.format(temp[0]),'Error')
-                return None
-            # Add parameter to listbox
-            self.ParameterBox.insert(tk.END, temp[0]+':'+temp[1])
-            self.EnableFlags()
-            self.FlagsBox.insert(tk.END, self.TestMatrix.ParametersFlagsOptions[0])
-            self.DisableFlags()
-            self.Status.SetStatus('PARAMETERS:Parameter added.\n','Normal')
+            ParamFlag = temp[1]
         else:
-            self.Status.SetStatus('PARAMETERS:Input syntax not recognized. Input format is NAME:VAL\n','Error')
+            ParamFlag = self.TestMatrix.ParametersFlagsOptions[0]
+        # Check if parameter already exists
+        if ParamName in [x.split(':')[0] for x in self.ParameterBox.get(0,tk.END)]:
+            self.Status.SetStatus('PARAMETERS:Parameter ''{0}'' already exists.\n'.format(temp[0]),'Error')
+            return None
+        # Check flag
+        Error,ParamFlag = self.FlagCheck(ParamFlag)
+        # Add parameter to listbox
+        self.ParameterBox.insert(tk.END, ParamName + ':' + ParamVal)
+        self.EnableFlags()
+        self.FlagsBox.insert(tk.END, ParamFlag)
+        self.DisableFlags()
+        self.Status.SetStatus('PARAMETERS:Parameter added.\n','Normal')
         return None
         
 
@@ -286,6 +305,18 @@ class ParametersWindow:
         # Get input field
         Flag = self.ParameterInput.get()
         # Check validity of input
+        Error,Flag = self.FlagCheck(Flag)
+        # Update the list box
+        self.EnableFlags()
+        self.FlagsBox.delete(ParamIdx)
+        self.FlagsBox.insert(ParamIdx, Flag)
+        self.DisableFlags()
+        if Error == 0:
+            self.Status.SetStatus('PARAMETERS:Flag set.\n','Normal')
+        return None
+
+
+    def FlagCheck(self,Flag):
         Error = 0
         if Flag == '':
             Flag = self.TestMatrix.ParametersFlagsOptions[0]
@@ -308,18 +339,31 @@ class ParametersWindow:
         if 'Z' in self.FlagsBox.get(0, tk.END) and Flag == 'Z':
             self.Status.SetStatus('PARAMETERS:A time storage parameter already exists. Setting flag to null.\n','Error')
             Flag = self.TestMatrix.ParametersFlagsOptions[0]
+            Error = 1
         # Check if Z and T exist together
-        if 'Z' and 'T' in Flag:
+        if ('Z' in Flag) and ('T' in Flag):
             self.Status.SetStatus('PARAMETERS:The time storage flag and timing flag can not be used on the same parameter. Using ''T'' only.\n','Error')
-            Flag = 'Z'
-        # Update the list box
-        self.EnableFlags()
-        self.FlagsBox.delete(ParamIdx)
-        self.FlagsBox.insert(ParamIdx, Flag)
-        self.DisableFlags()
-        if Error == 0:
-            self.Status.SetStatus('PARAMETERS:Flag set.\n','Normal')
-        return None
+            Flag = 'T'
+            Error = 1
+        return Error,Flag
+
+
+    def MouseScroll(self,event):
+        self.ParameterBox.yview('scroll',event.delta,'units')
+        self.FlagsBox.yview('scroll',event.delta,'units')
+        return 'break'
+
+
+    def ArrowScrollUp(self,event):
+        self.ParameterBox.yview('scroll',-1,'units')
+        self.FlagsBox.yview('scroll',-1,'units')
+        return 'break'
+
+
+    def ArrowScrollDown(self,event):
+        self.ParameterBox.yview('scroll',1,'units')
+        self.FlagsBox.yview('scroll',1,'units')
+        return 'break'
 
 
     def Export(self):

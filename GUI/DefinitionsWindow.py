@@ -33,6 +33,12 @@ class DefinitionsWindow:
         # Add list box
         self.DefinitionsBox = tk.Listbox(Subframe,width=defaultWidth,height=defaultHeight,exportselection=0)
         self.FlagsBox       = tk.Listbox(Subframe,width=3,height=defaultHeight)
+        self.DefinitionsBox.bind('<MouseWheel>',self.MouseScroll)
+        self.FlagsBox.bind('<MouseWheel>',self.MouseScroll)
+        self.DefinitionsBox.bind('<Up>',self.ArrowScrollUp)
+        self.FlagsBox.bind('<Up>',self.ArrowScrollUp)
+        self.DefinitionsBox.bind('<Down>',self.ArrowScrollDown)
+        self.FlagsBox.bind('<Down>',self.ArrowScrollDown)
 
         # Add input fields
         self.DefinitionsInput = tk.StringVar(Subframe, value = '')
@@ -43,9 +49,9 @@ class DefinitionsWindow:
         SaveTemplateButton    = tk.Button(Subframe, text='SAVE TEMPLATE',justify=tk.CENTER, command=self.SaveTemplate, width = int(defaultWidth/2))
         AddButton             = tk.Button(Subframe, text='ADD',justify=tk.CENTER, command=self.Add, width = int(defaultWidth/2))
         RemoveButton          = tk.Button(Subframe, text='REMOVE',justify=tk.CENTER, command=self.Remove, width = int(defaultWidth/2))
-        FlagButton            = tk.Button(Subframe, text='SET FLAG',justify=tk.CENTER, command=self.SetFlag, width = int(defaultWidth/2))
+        FlagButton            = tk.Button(Subframe, text='UPDATE FLAG',justify=tk.CENTER, command=self.SetFlag, width = int(defaultWidth/2))
         SaveCloseButton       = tk.Button(Subframe, text='SAVE AND CLOSE',justify=tk.CENTER, command=self.Export, width = defaultWidth)
-        UpdateButton          = tk.Button(Subframe, text='UPDATE',justify=tk.CENTER, command=self.Update, width = int(defaultWidth/2))
+        UpdateButton          = tk.Button(Subframe, text='UPDATE DEF',justify=tk.CENTER, command=self.Update, width = int(defaultWidth/2))
 
         # Grid the items
         LoadTemplateButton.grid(    row=0, column=0)
@@ -67,17 +73,6 @@ class DefinitionsWindow:
 
         # Check to to see if a test matrix already exists
         self.CheckForExistingTestMatrix()
-
-    '''
-    def Show(self):
-        # Make window blocking
-        self.Master.grab_set()
-        # Wait for user input
-        self.Master.wait_window()
-        # Remove blocking
-        self.Master.grab_release()
-        return None
-    '''
 
 
     def CheckForExistingTestMatrix(self):
@@ -151,20 +146,33 @@ class DefinitionsWindow:
     def Add(self):
         DefInput = self.DefinitionsInput.get()
         # Split input
+        # Input format: Name:Value,Flag or Name:Value
         temp = DefInput.split(':')
+        # Check if more than one colon exists
+        if len(temp) != 2:
+            self.Status.SetStatus('DEFINITIONS:Input syntax not recognized. Input format is NAME:VAL or NAME:VAL,FLAG\n','Error')
+            return None
+        # Extract definition name
+        DefName = temp[0]
+        # Check if a flag was included
+        temp = temp[1].split(',')
+        DefVal = temp[0]
         if len(temp) == 2:
-            # Check if definition already exists
-            if temp[0] in [x.split(':')[0] for x in self.DefinitionsBox.get(0,tk.END)]:
-                self.Status.SetStatus('DEFINITIONS:Definition ''{0}'' already exists.\n'.format(temp[0]),'Error')
-                return None
-            # Add definition to listbox
-            self.DefinitionsBox.insert(tk.END, temp[0]+':'+temp[1])
-            self.EnableFlags()
-            self.FlagsBox.insert(tk.END, self.TestMatrix.DefinitionsFlagsOptions[0])
-            self.DisableFlags()
-            self.Status.SetStatus('DEFINITIONS:Definition added.\n','Normal')
+            DefFlag = temp[1]
         else:
-            self.Status.SetStatus('DEFINITIONS:Input syntax not recognized. Input format is NAME:VAL\n','Error')
+            DefFlag = self.TestMatrix.DefinitionsFlagsOptions[0]
+        # Check if definition already exists
+        if DefName in [x.split(':')[0] for x in self.DefinitionsBox.get(0,tk.END)]:
+            self.Status.SetStatus('DEFINITIONS:Definition ''{0}'' already exists.\n'.format(temp[0]),'Error')
+            return None
+        # Check flag
+        Error,DefFlag = self.FlagCheck(DefFlag)
+        # Add definition to listbox
+        self.DefinitionsBox.insert(tk.END, DefName + ':' + DefVal)
+        self.EnableFlags()
+        self.FlagsBox.insert(tk.END, DefFlag)
+        self.DisableFlags()
+        self.Status.SetStatus('DEFINITIONS:Definition added.\n','Normal')
         return None
         
 
@@ -221,6 +229,18 @@ class DefinitionsWindow:
         # Get input field
         Flag = self.DefinitionsInput.get()
         # Check validity of input
+        Error,Flag = self.FlagCheck(Flag)
+        # Update the list box
+        self.EnableFlags()
+        self.FlagsBox.delete(DefIdx)
+        self.FlagsBox.insert(DefIdx, Flag)
+        self.DisableFlags()
+        if Error == 0:
+            self.Status.SetStatus('DEFINITIONS:Flag set.\n','Normal')
+        return None
+
+
+    def FlagCheck(self,Flag):
         Error = 0
         if Flag == '':
             Flag = self.TestMatrix.DefinitionsFlagsOptions[0]
@@ -235,16 +255,27 @@ class DefinitionsWindow:
                    Error = 1
             if Error == 1:
                 Flag = self.TestMatrix.DefinitionsFlagsOptions[0]
-        # Update the list box
-        self.EnableFlags()
-        self.FlagsBox.delete(DefIdx)
-        self.FlagsBox.insert(DefIdx, Flag)
-        self.DisableFlags()
-        if Error == 0:
-            self.Status.SetStatus('DEFINITIONS:Flag set.\n','Normal')
-        return None
-        
+        return Error,Flag
+    
 
+    def MouseScroll(self,event):
+        self.DefinitionsBox.yview('scroll',event.delta,'units')
+        self.FlagsBox.yview('scroll',event.delta,'units')
+        return 'break'
+
+
+    def ArrowScrollUp(self,event):
+        self.DefinitionsBox.yview('scroll',-1,'units')
+        self.FlagsBox.yview('scroll',-1,'units')
+        return 'break'
+
+
+    def ArrowScrollDown(self,event):
+        self.DefinitionsBox.yview('scroll',1,'units')
+        self.FlagsBox.yview('scroll',1,'units')
+        return 'break'
+
+    
     def Export(self):
         # Get the contents of the list boxes
         DefList     = self.DefinitionsBox.get(0, tk.END)
