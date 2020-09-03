@@ -75,13 +75,18 @@ def Timing(TestMatrix):
 
             '''
             --- Constant Time Cacluation ---
-            Possible Cases:
-            1. If only single items (no lists) are in test point, use the longest constant
-            2. If only one item has a list and all others are singles, use the list time or longest single constant if it is longer
-               than the list time, t = constant*len(list) or t = max(constant)
-            3. If multiple lists are present, use the average of all constant times, t = mean(constant)*np.size(np.meshgrid(L1,L2,...))
-               ^ Not an ideal solution but don't have anything better right now, also not expecting more than two lists at a time with
-                 both lists having the same time associated with them.
+            The constant time is calculated using the following equation:
+
+            ConstantTime = max[Cmin*prod(Lists),C(i)*len(List(i)) for i=1:N_List]
+
+            1. If only single items are present (no lists), then the the largest constant time will be used.
+            
+            2. If lists are present, the time to complete a full ND grid of all combinations using the shortest time
+            (it is assumed that the tester will always opt for the shortest time to complete an ND grid) or the
+            time to complete a single list will be used, which ever is greater.
+
+            It is assumed that when multiple constant times are present, they are completed in parallel so
+            the longest item to complete will always be the final constant time.
             '''
             # ---- Calculate constant times ----
             if ConstParams != {}:
@@ -122,35 +127,17 @@ def Timing(TestMatrix):
                                 pass
                     else:
                         pass
-                # Check if only single entries are present
-                if sum(LenList) == len(LenList):
-                    MaxT = 0
-                    for key,value in ConstParams.items():
-                        if float(ConstParams[key]['TIME']) > MaxT:
-                            MaxT = float(ConstParams[key]['TIME'])
-                    SumTime += MaxT
-                # Check if only one list is present
-                elif (len(np.unique(LenList)) == 2) and (min(np.unique(LenList)) == 1):
-                    MaxT = 0
-                    for key,value in ConstParams.items():
-                        if len(ConstParams[key]['VALUE']) > 1:
-                            ListKey = key
-                        if float(ConstParams[key]['TIME']) > MaxT:
-                            MaxT = float(ConstParams[key]['TIME'])
-                    ListTime = len(ConstParams[ListKey]['VALUE'])
-                    if ListTime > MaxT:   
-                        SumTime +=  float(ConstParams[ListKey]['TIME'])*ListTime
-                    else:
-                        SumTime +=  float(ConstParams[ListKey]['TIME'])*MaxT
-                # Multiple lists are present
-                else:
-                    MeanT = 0
-                    IDX   = 0
-                    # Cumulative average
-                    for key,value in ConstParams.items():
-                        MeanT = MeanT + (float(ConstParams[key]['TIME'])-MeanT)/(IDX+1)
-                        IDX += 1
-                    SumTime += MeanT*np.prod(LenList)
+                MinC = np.inf
+                TList = []
+                for key,value in ConstParams.items():
+                    # Find small constant time
+                    if float(ConstParams[key]['TIME']) < MinC:
+                        MinC = float(ConstParams[key]['TIME'])
+                    # Get time to complete each item in ConstParams
+                    TList.append(float(ConstParams[key]['TIME'])*len(ConstParams[key]['VALUE']))
+                TList.append(MinC*np.prod(LenList))
+                # Use the max of either: Cmin*prod(LenList) or C(i)*len(L(i))
+                SumTime += max(TList)
             else:
                 # Do nothing
                 pass
