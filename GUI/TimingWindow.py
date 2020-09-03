@@ -33,6 +33,12 @@ class TimingWindow:
         # Add list box
         self.TimingBox = tk.Listbox(Subframe,width=defaultWidth,height=defaultHeight,exportselection=0)
         self.FlagsBox  = tk.Listbox(Subframe,width=3,height=defaultHeight)
+        self.TimingBox.bind('<MouseWheel>',self.MouseScroll)
+        self.FlagsBox.bind('<MouseWheel>',self.MouseScroll)
+        self.TimingBox.bind('<Up>',self.ArrowScrollUp)
+        self.FlagsBox.bind('<Up>',self.ArrowScrollUp)
+        self.TimingBox.bind('<Down>',self.ArrowScrollDown)
+        self.FlagsBox.bind('<Down>',self.ArrowScrollDown)
 
         # Add input fields
         self.TimingInput    = tk.StringVar(Subframe, value = '')
@@ -142,6 +148,24 @@ class TimingWindow:
         if Error == 0:
             self.Status.SetStatus('TIMING:Flag set.\n','Normal')
         return None
+
+
+    def MouseScroll(self,event):
+        self.TimingBox.yview('scroll',event.delta,'units')
+        self.FlagsBox.yview('scroll',event.delta,'units')
+        return 'break'
+
+
+    def ArrowScrollUp(self,event):
+        self.TimingBox.yview('scroll',-1,'units')
+        self.FlagsBox.yview('scroll',-1,'units')
+        return 'break'
+
+
+    def ArrowScrollDown(self,event):
+        self.TimingBox.yview('scroll',1,'units')
+        self.FlagsBox.yview('scroll',1,'units')
+        return 'break'
 
 
     def Export(self):
