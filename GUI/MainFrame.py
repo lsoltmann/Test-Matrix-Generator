@@ -357,27 +357,34 @@ class MainFrame:
             return None
         GroupName    = self.GroupBox.get(GroupSelection[0])
         Selection    = self.TestPointBox.curselection()
+        Selection    = list(Selection)
         if Selection == ():
             self.Status.SetStatus('No test point selected.\n','Error')
-            return None
-        TestPointIdx = Selection[0]
+            return None        
         # Check for corner cases
-        if Dir == 'UP' and TestPointIdx==0:
+        # Note that the selection tuple is in increasing order
+        if Dir == 'UP' and Selection[0]==0:
             return None
-        elif Dir == 'DOWN' and TestPointIdx==self.TestPointBox.size()-1:
+        elif Dir == 'DOWN' and Selection[-1]==self.TestPointBox.size()-1:
             return None
         else:
-            # Move inside the test matrix
-            self.TestMatrix.MoveTestPoint(GroupName,TestPointIdx,Dir)
+            # If direction is down, reverse the index order
+            if Dir == 'DOWN':
+                Selection.reverse()
+            # Move each test point inside the test matrix
+            for IDX in Selection:
+                self.TestMatrix.MoveTestPoint(GroupName,IDX,Dir)
         # Refresh the test point listbox
         self.PopulateTestPointBox()
         # Update status and highlight the moved test point
         if Dir == 'UP':
-            self.TestPointBox.selection_set(TestPointIdx-1)
-            self.Status.SetStatus('Test point {0} moved up.\n'.format(TestPointIdx))
+            Selection =[i-1 for i in Selection]
+            self.Status.SetStatus('Test point(s) moved up.\n')
         elif Dir == 'DOWN':
-            self.TestPointBox.selection_set(TestPointIdx+1)
-            self.Status.SetStatus('Test point {0} moved down.\n'.format(TestPointIdx))
+            Selection =[i+1 for i in Selection]
+            self.Status.SetStatus('Test point(s) moved down.\n')
+        for IDX in Selection:
+            self.TestPointBox.selection_set(IDX)
         return None
 
 
