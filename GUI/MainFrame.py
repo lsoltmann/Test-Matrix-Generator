@@ -249,14 +249,25 @@ class MainFrame:
         for i in range(len(TestPointFrame)):
             # Iterate through each row and add the 'TagCol' value to the testpoint tag
             if TagCol != []:
-                Tag = str(i) + ': '
+                Tag = str(i+1) + ': '
                 for j in TagCol:
-                    Tag = Tag + j + '=' + str(TestPointFrame[j].values[i]) + ','
+                    # Check if value is a string or number
+                    try:
+                        # If the value is a number, check if it's in integer or a float
+                        TagVal = float(TestPointFrame[j].values[i])
+                        if TagVal.is_integer():
+                            TagVal = '{0:d}'.format(TagVal)
+                        else:
+                            # If it's a float, limit the number of decimal places shown
+                            TagVal = '{0:.2f}'.format(TagVal)
+                    except:
+                        TagVal = str(TestPointFrame[j].values[i])
+                    Tag = Tag + j + '=' + TagVal + ','
                 Tag = Tag[:-1]
                 self.TestPointBox.insert(tk.END, Tag)
             # If the 'TagCol' is empty, add all columns to the tag
             else:
-                Tag = str(i) + ': '
+                Tag = str(i+1) + ': '
                 for j in TestPointFrame.columns:
                     Tag = Tag + j + '=' + str(TestPointFrame[j].values[i]) + ','
                 Tag = Tag[:-1]
@@ -290,10 +301,20 @@ class MainFrame:
                         ParamVals[j] = '<VARIES>'
             # Iterate through all the parameters and populate the box
             for i in range(len(ParamVals)):
-                self.TestPointParamsBox.insert(tk.END, ParamNames[i] + ': ' + str(ParamVals[i]))
+                # Check if value is a string or number
+                try:
+                    # If the value is a number, check if it's in integer or a float
+                    ParamVal = float(ParamVals[i])
+                    if ParamVal.is_integer():
+                        ParamVal = '{0:d}'.format(ParamVal)
+                    else:
+                        # If it's a float, limit the number of decimal places shown
+                        ParamVal = '{0:.4f}'.format(ParamVal)
+                except:
+                    ParamVal = str(ParamVals[i])
+                self.TestPointParamsBox.insert(tk.END, ParamNames[i] + ': ' + ParamVal)
 
         
-
     def AddTestPoint(self):
         # Get group selection in listbox
         Selection = self.GroupBox.curselection()
@@ -315,13 +336,13 @@ class MainFrame:
         else:
             # Add test point to matrix
             self.TestMatrix.AddTestPoint(GroupName,TestPointList)
+            # Update the summary
+            self.Summary.Update()
             # Refresh the test point and parameters listbox
             self.PopulateTestPointBox()
             self.PopulateParametersBox()
             # Update status
             self.Status.SetStatus('Testpoint added.\n')
-            # Update the summary
-            self.Summary.Update()
             return None
     
 
