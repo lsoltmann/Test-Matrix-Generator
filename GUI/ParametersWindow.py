@@ -6,12 +6,12 @@ from tkinter.filedialog import asksaveasfilename
 
 class ParametersWindow:
     def __init__(self,Master,TestMatrix,Summary,Status):
-        self.Master = Master
-        self.TestMatrix = TestMatrix
-        self.Status = Status
-        self.Summary = Summary
-        self.ParamsYAML = None
-        
+        self.Master       = Master
+        self.TestMatrix   = TestMatrix
+        self.Status       = Status
+        self.Summary      = Summary
+        self.ParamsYAML   = None
+
         # Window size
         WinWidth  = 330
         WinHeight = 575
@@ -188,7 +188,14 @@ class ParametersWindow:
         # Extract parameter name
         ParamName = temp[0]
         # Check if a flag was included
-        temp = temp[1].split(',')
+        # but first check if the input was a list or not
+        if ('[' in temp[1]) and (']' in temp[1]):
+            temp = temp[1].split('],')
+            # Add the last bracket back in (removed by split) if the split was successful
+            if temp[0][-1] != ']':
+                temp[0] = temp[0]+']'
+        else:
+            temp = temp[1].split(',')
         ParamVal = temp[0]
         if len(temp) == 2:
             ParamFlag = temp[1]
@@ -196,7 +203,7 @@ class ParametersWindow:
             ParamFlag = self.TestMatrix.ParametersFlagsOptions[0]
         # Check if parameter already exists
         if ParamName in [x.split(':')[0] for x in self.ParameterBox.get(0,tk.END)]:
-            self.Status.SetStatus('PARAMETERS:Parameter ''{0}'' already exists.\n'.format(temp[0]),'Error')
+            self.Status.SetStatus('PARAMETERS:Parameter ''{0}'' already exists.\n'.format(ParamName),'Error')
             return None
         # Check flag
         Error,ParamFlag = self.FlagCheck(ParamFlag)

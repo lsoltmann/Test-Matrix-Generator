@@ -6,10 +6,10 @@ from tkinter.filedialog import asksaveasfilename
 
 class DefinitionsWindow:
     def __init__(self,Master,TestMatrix,Summary,Status):
-        self.Master = Master
+        self.Master     = Master
         self.TestMatrix = TestMatrix
-        self.Status = Status
-        self.Summary = Summary
+        self.Status     = Status
+        self.Summary    = Summary
         
         # Window size
         WinWidth  = 330
@@ -155,7 +155,14 @@ class DefinitionsWindow:
         # Extract definition name
         DefName = temp[0]
         # Check if a flag was included
-        temp = temp[1].split(',')
+        # but first check if the input was a list or not
+        if ('[' in temp[1]) and (']' in temp[1]):
+            temp = temp[1].split('],')
+            # Add the last bracket back in (removed by split) if the split was successful
+            if temp[0][-1] != ']':
+                temp[0] = temp[0]+']'
+        else:
+            temp = temp[1].split(',')        
         DefVal = temp[0]
         if len(temp) == 2:
             DefFlag = temp[1]
@@ -163,7 +170,7 @@ class DefinitionsWindow:
             DefFlag = self.TestMatrix.DefinitionsFlagsOptions[0]
         # Check if definition already exists
         if DefName in [x.split(':')[0] for x in self.DefinitionsBox.get(0,tk.END)]:
-            self.Status.SetStatus('DEFINITIONS:Definition ''{0}'' already exists.\n'.format(temp[0]),'Error')
+            self.Status.SetStatus('DEFINITIONS:Definition ''{0}'' already exists.\n'.format(DefName),'Error')
             return None
         # Check flag
         Error,DefFlag = self.FlagCheck(DefFlag)
