@@ -170,6 +170,23 @@ class TestMatrix:
         return None
 
 
+    def CopyTestPoint(self,GroupName,BaseIdx,NewIdx):
+        # Find the index for the specified group
+        Idx = self.GroupNames.index(GroupName)
+        # Locate the row to be copied and save it off
+        CopyRow = self.GroupTestPoints[Idx].iloc[[BaseIdx]]
+        # Check if the row is being inserted between rows or at the end
+        if NewIdx > len(self.GroupTestPoints[Idx])-1:
+            # If the row is to be added to the end, just concatenate the two dataframes
+            self.GroupTestPoints[Idx] = pd.concat([self.GroupTestPoints[Idx], CopyRow],ignore_index=True)
+        else:
+            # If the row is being inserted between two rows, split the dataframe at the point of insertion
+            df1 = self.GroupTestPoints[Idx][0:NewIdx] 
+            df2 = self.GroupTestPoints[Idx][NewIdx:]
+            self.GroupTestPoints[Idx] = pd.concat([df1,CopyRow,df2],ignore_index=True)
+        return None
+
+
     def RemoveTestPoint(self,GroupName,TestPointIdx):
         # Find the index for the specified group
         Idx = self.GroupNames.index(GroupName)
@@ -178,6 +195,7 @@ class TestMatrix:
         # Reset the index
         self.GroupTestPoints[Idx] = self.GroupTestPoints[Idx].reset_index(drop=True)
         return None
+
 
     def MoveTestPoint(self,GroupName,TestPointIdx,Dir):
         # Get testpoint group index

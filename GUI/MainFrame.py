@@ -65,6 +65,8 @@ class MainFrame:
         RemoveTestPointButton    = tk.Button(Subframe, text='REMOVE',justify=tk.CENTER, command=self.RemoveTestPoint, width = int(defaultWidth/2))
         MoveTestPointUpButton    = tk.Button(Subframe, text=u"\u25B2",justify=tk.CENTER, command=lambda:self.MoveTestPoint('UP'), width = int(defaultWidth/2))
         MoveTestPointDownButton  = tk.Button(Subframe, text=u"\u25BC",justify=tk.CENTER, command=lambda:self.MoveTestPoint('DOWN'), width = int(defaultWidth/2))
+        CopyBelowButton          = tk.Button(Subframe, text='COPY BELOW',justify=tk.CENTER, command=self.CopyBelow, width = int(defaultWidth/2))
+        CopyBottomButton         = tk.Button(Subframe, text='COPY BOTTOM',justify=tk.CENTER, command=self.CopyBottom, width = int(defaultWidth/2))
 
         UpdateParameterButton    = tk.Button(Subframe, text='UPDATE',justify=tk.CENTER, command=self.UpdateParameter, width = defaultWidth)
 
@@ -104,6 +106,8 @@ class MainFrame:
         RemoveTestPointButton.grid(       row=4, column=3)
         MoveTestPointUpButton.grid(       row=5, column=2)
         MoveTestPointDownButton.grid(     row=5, column=3)
+        CopyBelowButton.grid(             row=6, column=2)
+        CopyBottomButton.grid(            row=6, column=3)
         
         UpdateParameterButton.grid(       row=3, column=4)
         ParameterInputField.grid(         row=2, column=4)
@@ -236,6 +240,9 @@ class MainFrame:
         self.TestPointParamsBox.delete(0, tk.END)
         # Get group box selection
         Idx = self.GroupBox.curselection()[0]
+        # Populate the group entry field with the group name
+        GrpName = self.GroupBox.get(Idx)
+        self.GroupNameInput.set(GrpName)
         # Isolate the test point group
         TestPointFrame = self.TestMatrix.GroupTestPoints[Idx]
         # Check if all values in each column are the same
@@ -356,17 +363,20 @@ class MainFrame:
         GroupName    = self.GroupBox.get(GroupSelection[0])
         Selection    = self.TestPointBox.curselection()
         if Selection == ():
-            self.Status.SetStatus('No test point selected.\n','Error')
+            self.Status.SetStatus('No test point(s) selected.\n','Error')
             return None
-        # Get test point index
-        TestPointIdx = Selection[0]
-        # Remove the test point
-        self.TestMatrix.RemoveTestPoint(GroupName,TestPointIdx)
+        # Convert selection to list
+        Selection = list(Selection)
+        # Reverse order of selection, this prevents reindexing during removal
+        Selection.reverse()
+        for Idx in Selection:
+            # Remove the test point
+            self.TestMatrix.RemoveTestPoint(GroupName,Idx)
+        # Update the summary
+        self.Summary.Update()
         # Refresh the test point box
         self.PopulateTestPointBox()
         self.Status.SetStatus('Testpoint removed.\n')
-        # Update the summary
-        self.Summary.Update()
         return None
     
 
@@ -380,7 +390,7 @@ class MainFrame:
         Selection    = self.TestPointBox.curselection()
         Selection    = list(Selection)
         if Selection == ():
-            self.Status.SetStatus('No test point selected.\n','Error')
+            self.Status.SetStatus('No test point(s) selected.\n','Error')
             return None        
         # Check for corner cases
         # Note that the selection tuple is in increasing order
@@ -409,6 +419,61 @@ class MainFrame:
         return None
 
 
+    # Puts a copy of the testpoint(s) directly below the orginal
+    def CopyBelow(self):
+        BaseSelection,GroupName = self.CopyTestPointCommon()
+        # Reverse order of base selection, this prevents reindexing during copying
+        BaseSelection.reverse()
+        # Get the indices of the copy locations
+        CopySelection = [x+1 for x in BaseSelection]
+        for i in range(len(BaseSelection)):
+            self.TestMatrix.CopyTestPoint(GroupName,BaseSelection[i],CopySelection[i])
+        # Update the summary
+        self.Summary.Update()
+        # Refresh the test point box
+        self.PopulateTestPointBox()
+        # Select the copied testpoint(s)
+        # Reverse the selection order again
+        CopySelection.reverse()
+        for i in range(len(CopySelection)):
+            self.TestPointBox.selection_set(CopySelection[i]+i)
+        return None
+
+
+    # Puts a copy of the testpoint(s) at the bottom of the matrix (for the specified group)
+    def CopyBottom(self):
+        BaseSelection,GroupName = self.CopyTestPointCommon()
+        LastIdx = self.TestPointBox.size()-1
+        CopySelection = [x+1 for x in range(len(BaseSelection))]
+        CopySelection = [x+LastIdx for x in CopySelection]
+        for i in range(len(BaseSelection)):
+            self.TestMatrix.CopyTestPoint(GroupName,BaseSelection[i],CopySelection[i])
+        # Update the summary
+        self.Summary.Update()
+        # Refresh the test point box
+        self.PopulateTestPointBox()
+        # Select the copied testpoint(s)
+        for i in CopySelection:
+            self.TestPointBox.selection_set(i)
+        return None
+
+
+    def CopyTestPointCommon(self):
+        # Get highlighted group
+        GroupSelection = self.GroupBox.curselection()
+        if GroupSelection == ():
+            self.Status.SetStatus('No group selected.\n','Error')
+            return None
+        GroupName    = self.GroupBox.get(GroupSelection[0])
+        Selection    = self.TestPointBox.curselection()
+        Selection    = list(Selection)
+        if Selection == ():
+            self.Status.SetStatus('No test point(s) selected.\n','Error')
+            return None
+        Selection = list(Selection)
+        return Selection,GroupName
+    
+
     def UpdateParameter(self):
         # Get group, testpoint, and parameter selections from listbox
         GroupSelection = self.GroupBox.curselection()
@@ -418,7 +483,7 @@ class MainFrame:
         GroupName = self.GroupBox.get(GroupSelection[0])
         TestPointSelection = self.TestPointBox.curselection()
         if TestPointSelection == ():
-            self.Status.SetStatus('No test point selected.\n','Error')
+            self.Status.SetStatus('No test point(s) selected.\n','Error')
             return None
         TestPointIdx = TestPointSelection
         ParamsSelection = self.TestPointParamsBox.curselection()
@@ -432,14 +497,14 @@ class MainFrame:
         # Update parameter value
         for i in TestPointIdx:
             self.TestMatrix.UpdateParameter(GroupName,i,ParameterName,Val)
+        # Update the summary
+        self.Summary.Update()
         # Refresh the test point and parameters listbox
         self.PopulateTestPointBox()
         #   Re-select the testpoint
         for i in TestPointIdx:
             self.TestPointBox.selection_set(i)
         self.PopulateParametersBox()
-        # Update the summary
-        self.Summary.Update()
         return None
 
 
