@@ -8,11 +8,11 @@ class TestMatrix:
         self.GroupTestPoints = []
         
         # Nested dictionary of test point parameter column names, their default values, and flags
-        # Format: {'<ParamName>':{'VALUE':<Value>,'FLAG':<Flag>},...}
+        # Format: {'<ParamName>':{'VALUE':<Value>,'FLAG':<Flag>,'TIMING:{'VALUE':<Value>,'FLAG':<Flag>}},...}
         self.Parameters = {}
         # Parameter flag options
         # NOTE: first entry must be the 'null flag'
-        self.ParametersFlagsOptions = ['-','*','S','T','Z']
+        self.ParametersFlagsOptions = ['-','*','S','T','Z','!']
         
         # Nested dictionary containing the definitions used in the test matrix and their flags
         # Format: {'<DefName>':{'VALUE':<Value>,'FLAG':<Flag>},...}
@@ -23,7 +23,7 @@ class TestMatrix:
 
         # Timing flags
         # NOTE: first entry must be the default flag (constant time)
-        self.TimingFlagOptions = ['C','D','S']
+        self.TimingFlagOptions = ['C','D']
 
 
     def ClearTestMatrix(self):

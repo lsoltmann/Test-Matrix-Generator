@@ -48,7 +48,7 @@ def Timing(TestMatrix):
             # ---- Calculate delta times ----
             if DeltaParams != {}:
                 #   Do not apply deltas to first row
-                if (i != 0) and (j != 0):
+                if (i != 0) or (j != 0):
                     # Get the previous row
                     # If this row is the first row of a new group, get the last row of the last group
                     if j == 0:
@@ -144,7 +144,21 @@ def Timing(TestMatrix):
 
             
             # Append the time to the row time storage parameter
-            Frame[TimeParam][j] = SumTime
+            #
+            # NOTE: This appending action can be completed using two methods:
+            #       chained indexing or .loc. Chained indexing gives this warning
+            #       when the timing is calculateda after adding a new parameter.
+            #
+            # SettingWithCopyWarning: A value is trying to be set on a copy of a
+            # slice from a DataFrame. See the caveats in the documentation:
+            # https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+            #
+            # According to the reference, it is recommended to use .loc.
+            #
+            # --- Chained indexing
+            #Frame[TimeParam][j] = SumTime
+            # --- .loc
+            Frame.loc[j,TimeParam] = SumTime
     return None
             
 

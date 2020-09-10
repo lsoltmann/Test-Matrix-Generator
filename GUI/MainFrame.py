@@ -253,6 +253,55 @@ class MainFrame:
             # to the tag list
             if len(temp) != 1:
                 TagCol.append(TestPointFrame.columns[i])
+        # If all values are unique (i.e. they are the same across all rows), add
+        # all the columns to the tag
+        if TagCol == []:
+            TagCol = list(TestPointFrame.columns)
+        # Check for ignore columns and remove them if found
+        for item in TagCol:
+            if '!' in self.TestMatrix.Parameters[item]['FLAG']:
+                del TagCol[TagCol.index(item)]
+        for i in range(len(TestPointFrame)):
+            # Iterate through each row and add the 'TagCol' value to the testpoint tag
+            Tag = str(i+1) + ': '
+            for j in TagCol:
+                # Check if value is a string or number
+                try:
+                    # If the value is a number, check if it's in integer or a float
+                    TagVal = float(TestPointFrame[j].values[i])
+                    if TagVal.is_integer():
+                        TagVal = '{0:d}'.format(TagVal)
+                    else:
+                        # If it's a float, limit the number of decimal places shown
+                        TagVal = '{0:.2f}'.format(TagVal)
+                except:
+                    TagVal = str(TestPointFrame[j].values[i])
+                Tag = Tag + j + '=' + TagVal + ','
+            Tag = Tag[:-1]
+            self.TestPointBox.insert(tk.END, Tag)
+        return None
+
+    '''
+    def PopulateTestPointBox(self):
+        # Clear the test point box
+        self.TestPointBox.delete(0, tk.END)
+        # Clear the parameters box
+        self.TestPointParamsBox.delete(0, tk.END)
+        # Get group box selection
+        Idx = self.GroupBox.curselection()[0]
+        # Populate the group entry field with the group name
+        GrpName = self.GroupBox.get(Idx)
+        self.GroupNameInput.set(GrpName)
+        # Isolate the test point group
+        TestPointFrame = self.TestMatrix.GroupTestPoints[Idx]
+        # Check if all values in each column are the same
+        TagCol = []
+        for i in range(len(TestPointFrame.columns)):
+            temp = TestPointFrame[TestPointFrame.columns[i]].unique()
+            # If there is more than one unique value, then add the column name
+            # to the tag list
+            if len(temp) != 1:
+                TagCol.append(TestPointFrame.columns[i])
         for i in range(len(TestPointFrame)):
             # Iterate through each row and add the 'TagCol' value to the testpoint tag
             if TagCol != []:
@@ -280,6 +329,7 @@ class MainFrame:
                 Tag = Tag[:-1]
                 self.TestPointBox.insert(tk.END, Tag)
         return None
+    '''
 
 
     def PopulateParametersBox(self):
@@ -405,6 +455,8 @@ class MainFrame:
             # Move each test point inside the test matrix
             for IDX in Selection:
                 self.TestMatrix.MoveTestPoint(GroupName,IDX,Dir)
+        # Update the summary
+        self.Summary.Update()
         # Refresh the test point listbox
         self.PopulateTestPointBox()
         # Update status and highlight the moved test point
