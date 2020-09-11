@@ -213,10 +213,15 @@ class ParametersWindow:
         self.FlagsBox.insert(tk.END, ParamFlag)
         self.DisableFlags()
         self.Status.SetStatus('PARAMETERS:Parameter added.\n','Normal')
+        # Move the window view to the bottom
+        self.ParameterBox.yview_moveto(1.0)
+        self.FlagsBox.yview_moveto(1.0)
         return None
         
 
     def Remove(self):
+        # Get the current window view
+        ScrollView = self.ParameterBox.yview()
         # Get highlighted selections in listbox
         Selection = self.ParameterBox.curselection()
         if Selection != ():
@@ -225,10 +230,15 @@ class ParametersWindow:
             self.FlagsBox.delete(Selection[0])
             self.DisableFlags()
             self.Status.SetStatus('PARAMETERS:Parameter removed.\n','Normal')
+            # Set the window view back to what it was
+            self.ParameterBox.yview_moveto(ScrollView[0])
+            self.FlagsBox.yview_moveto(ScrollView[0])
         return None
 
 
     def Move(self,Dir):
+        # Get the current window view
+        ScrollView = self.ParameterBox.yview()
         # Get highlighted parameter in listbox
         Selection = self.ParameterBox.curselection()
         if Selection == ():
@@ -268,10 +278,15 @@ class ParametersWindow:
                     self.FlagsBox.selection_set(Selection[0]+1)
                     self.DisableFlags()
                     self.Status.SetStatus('PARAMETERS:Parameter \'{0}\' moved down.\n'.format(ParamName.split(':')[0].strip()))
+                # Set the window view back to what it was
+                self.ParameterBox.yview_moveto(ScrollView[0])
+                self.FlagsBox.yview_moveto(ScrollView[0])            
             return None
 
 
     def Update(self):
+        # Get the current window view
+        ScrollView = self.ParameterBox.yview()
         # Get current selection
         Selection = self.ParameterBox.curselection()
         if Selection != ():
@@ -288,6 +303,9 @@ class ParametersWindow:
                 self.ParameterBox.delete(ParameterIdx)
                 # Combine and add parameter back to listbox
                 self.ParameterBox.insert(ParameterIdx, ParameterName+':'+str(Val))
+                # Set the window view back to what it was
+                self.ParameterBox.yview_moveto(ScrollView[0])
+                self.FlagsBox.yview_moveto(ScrollView[0]) 
         return None
 
 
@@ -302,6 +320,8 @@ class ParametersWindow:
 
 
     def SetFlag(self):
+        # Get the current window view
+        ScrollView = self.ParameterBox.yview()
         # Get highlighted selection in listbox
         Selection = self.ParameterBox.curselection()
         if Selection == ():
@@ -320,6 +340,9 @@ class ParametersWindow:
         self.DisableFlags()
         if Error == 0:
             self.Status.SetStatus('PARAMETERS:Flag set.\n','Normal')
+        # Set the window view back to what it was
+        self.ParameterBox.yview_moveto(ScrollView[0])
+        self.FlagsBox.yview_moveto(ScrollView[0]) 
         return None
 
 

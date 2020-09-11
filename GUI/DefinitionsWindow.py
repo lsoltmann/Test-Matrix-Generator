@@ -180,10 +180,15 @@ class DefinitionsWindow:
         self.FlagsBox.insert(tk.END, DefFlag)
         self.DisableFlags()
         self.Status.SetStatus('DEFINITIONS:Definition added.\n','Normal')
+        # Move the window view to the bottom
+        self.DefinitionsBox.yview_moveto(1.0)
+        self.FlagsBox.yview_moveto(1.0)
         return None
         
 
     def Remove(self):
+        # Get the current window view
+        ScrollView = self.DefinitionsBox.yview()
         # Get highlighted selections in listbox
         Selection = self.DefinitionsBox.curselection()
         if Selection != ():
@@ -192,10 +197,15 @@ class DefinitionsWindow:
             self.FlagsBox.delete(Selection[0])
             self.DisableFlags()
             self.Status.SetStatus('DEFINITIONS:Definition removed.\n','Normal')
+             # Set the window view back to what it was
+            self.DefinitionsBox.yview_moveto(ScrollView[0])
+            self.FlagsBox.yview_moveto(ScrollView[0])
         return None
 
 
     def Update(self):
+        # Get the current window view
+        ScrollView = self.DefinitionsBox.yview()
         # Get current selection
         Selection = self.DefinitionsBox.curselection()
         if Selection != ():
@@ -212,6 +222,9 @@ class DefinitionsWindow:
                 self.DefinitionsBox.delete(DefIdx)
                 # Combine and add definition back to listbox
                 self.DefinitionsBox.insert(DefIdx, DefName+':'+str(Val))
+                # Set the window view back to what it was
+                self.DefinitionsBox.yview_moveto(ScrollView[0])
+                self.FlagsBox.yview_moveto(ScrollView[0]) 
         return None
 
 
@@ -226,6 +239,8 @@ class DefinitionsWindow:
 
 
     def SetFlag(self):
+        # Get the current window view
+        ScrollView = self.DefinitionsBox.yview()
         # Get highlighted selection in listbox
         Selection = self.DefinitionsBox.curselection()
         if Selection == ():
@@ -244,6 +259,9 @@ class DefinitionsWindow:
         self.DisableFlags()
         if Error == 0:
             self.Status.SetStatus('DEFINITIONS:Flag set.\n','Normal')
+        # Set the window view back to what it was
+        self.DefinitionsBox.yview_moveto(ScrollView[0])
+        self.FlagsBox.yview_moveto(ScrollView[0]) 
         return None
 
 

@@ -495,6 +495,8 @@ class MainFrame:
     
 
     def UpdateParameter(self):
+        # Get the current test point window view
+        ScrollView = self.TestPointBox.yview()
         # Get group, testpoint, and parameter selections from listbox
         GroupSelection = self.GroupBox.curselection()
         if GroupSelection == ():
@@ -525,6 +527,8 @@ class MainFrame:
         for i in TestPointIdx:
             self.TestPointBox.selection_set(i)
         self.PopulateParametersBox()
+        # Set the test point window view back to what it was
+        self.TestPointBox.yview_moveto(ScrollView[0])
         return None
 
 
