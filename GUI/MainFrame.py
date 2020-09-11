@@ -223,8 +223,10 @@ class MainFrame:
 
 
     def LoadGroups(self,*args): #args not needed, extra stuff passed in by trace
-        # Clear the list box first
+        # Clear all the list boxes first
         self.GroupBox.delete(0,tk.END)
+        self.TestPointBox.delete(0,tk.END)
+        self.TestPointParamsBox.delete(0,tk.END)
         # Add the loaded test matrix groups
         for item in self.TestMatrix.GroupNames:
             self.GroupBox.insert(tk.END, item)
@@ -350,6 +352,8 @@ class MainFrame:
             self.PopulateParametersBox()
             # Update status
             self.Status.SetStatus('Testpoint added.\n')
+            # Move the window view to the bottom
+            self.TestPointBox.yview_moveto(1.0)
             return None
     
 
@@ -418,11 +422,16 @@ class MainFrame:
             self.Status.SetStatus('Test point(s) moved down.\n')
         for IDX in Selection:
             self.TestPointBox.selection_set(IDX)
+        # Populate the parameters box
+        self.PopulateParametersBox()
         return None
 
 
     # Puts a copy of the testpoint(s) directly below the orginal
     def CopyBelow(self):
+        # Get the current window view
+        ScrollView = self.TestPointBox.yview()
+        # Get the selected test points and run checks
         BaseSelection,GroupName = self.CopyTestPointCommon()
         # Reverse order of base selection, this prevents reindexing during copying
         BaseSelection.reverse()
@@ -439,11 +448,16 @@ class MainFrame:
         CopySelection.reverse()
         for i in range(len(CopySelection)):
             self.TestPointBox.selection_set(CopySelection[i]+i)
+        # Populate the parameters box
+        self.PopulateParametersBox()
+        # Set the window view back to what it was
+        self.TestPointBox.yview_moveto(ScrollView[0])
         return None
 
 
     # Puts a copy of the testpoint(s) at the bottom of the matrix (for the specified group)
     def CopyBottom(self):
+        # Get the selected test points and run checks
         BaseSelection,GroupName = self.CopyTestPointCommon()
         LastIdx = self.TestPointBox.size()-1
         CopySelection = [x+1 for x in range(len(BaseSelection))]
@@ -457,6 +471,10 @@ class MainFrame:
         # Select the copied testpoint(s)
         for i in CopySelection:
             self.TestPointBox.selection_set(i)
+        # Populate the parameters box
+        self.PopulateParametersBox()
+        # Move the window view to the bottom
+        self.TestPointBox.yview_moveto(1.0)
         return None
 
 

@@ -134,7 +134,7 @@ class TestMatrix:
         # Get the group index
         Idx = self.GroupNames.index(GroupName)
         # Copy the test point group
-        self.GroupTestPoints.insert(CopyIdx,self.GroupTestPoints[Idx])
+        self.GroupTestPoints.insert(CopyIdx,self.GroupTestPoints[Idx].copy())
         return None
 
 
